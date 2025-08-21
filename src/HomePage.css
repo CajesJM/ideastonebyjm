@@ -1,0 +1,64 @@
+.homepage-container {
+  min-height: 90vh;
+  background-image: url('./assets/background.gif'); /* Replace with your actual image path */
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.homepage-overlay {
+  background-color: rgba(15, 23, 42, 0.75); /* Slate overlay */
+  padding: 3rem;
+  border-radius: 1rem;
+  text-align: center;
+  max-width: 800px;
+  width: 100%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.homepage-header {
+  margin-bottom: 2.5rem;
+}
+
+.homepage-title {
+  font-size: 4rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 1rem;
+  letter-spacing: 0.05em;
+}
+
+.homepage-subtext {
+  font-size: 1.25rem;
+  color: #e5e7eb;
+  line-height: 1.6;
+}
+
+.homepage-button {
+  background-color: #6366f1;
+  color: white;
+  font-weight: 600;
+  padding: 0.75rem 2rem;
+  border-radius: 0.5rem;
+  margin-top: 2rem;
+  font-size: 1rem;
+  box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  cursor: pointer;
+}
+
+.homepage-button:hover {
+  background-color: #4f46e5;
+  transform: translateY(-2px);
+}
+
+.homepage-footer {
+  margin-top: 3rem;
+  font-size: 0.875rem;
+  color: #d1d5db;
+}

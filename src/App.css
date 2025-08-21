@@ -1,42 +1,52 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+/* HomePage.css */
+.homepage-container {
+  min-height: 100vh;
+  background: linear-gradient(to bottom right, #0f172a, #3730a3); /* from-slate-900 to-indigo-900 */
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.homepage-header {
   text-align: center;
+  margin-bottom: 3rem;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.homepage-title {
+  font-size: 3.75rem; /* text-6xl */
+  font-weight: 800;    /* font-extrabold */
+  letter-spacing: 0.05em; /* tracking-wide */
+  margin-bottom: 1rem;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.homepage-subtext {
+  font-size: 1.125rem; /* text-lg */
+  max-width: 42rem;    /* max-w-2xl */
+  margin: 0 auto;
+  color: #d1d5db;      /* text-gray-300 */
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.homepage-button {
+  background-color: #6366f1; /* bg-indigo-500 */
+  color: white;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+  transition: background-color 0.3s ease;
+  cursor: pointer;
 }
 
-.card {
-  padding: 2em;
+.homepage-button:hover {
+  background-color: #4f46e5; /* hover:bg-indigo-600 */
 }
 
-.read-the-docs {
-  color: #888;
+.homepage-footer {
+  margin-top: 5rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #9ca3af; /* text-gray-400 */
 }

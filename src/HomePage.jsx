@@ -1,31 +1,120 @@
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import TextType from './Components/TextType.jsx';
+import OrbBackground from './Components/OrbBackground.jsx';
+import Admin from "./Components/Admin.jsx";
+import AuroraShader from './Background/AuroraShader.tsx'; 
 import './HomePage.css';
 
+
+
 const HomePage = () => {
+
   const navigate = useNavigate();
 
+  const headingRef = useRef(null);
+  const [headingVisible, setHeadingVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setHeadingVisible(true);
+        } else {
+          setHeadingVisible(false);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (headingRef.current) {
+      observer.observe(headingRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+
   return (
-    <div className="homepage-container">
-      <div className="homepage-overlay">
-        <header className="homepage-header">
-          <h1 className="homepage-title">💡 IdeaStone</h1>
-          <p className="homepage-subtext">
-            Spark your next capstone with curated ideas, smart filters, and creative inspiration.
-          </p>
-        </header>
+    <>
+    <div className='bg'>
+      <AuroraShader/>
+      <div className="homepage-container">
+        <OrbBackground />
+        <nav className="homepage-nav">
+      <div className="nav-left">IdeaStone</div>
 
-        <button
-          onClick={() => navigate('/generator')}
-          className="homepage-button"
-        >
-          🚀 Get Started
-        </button>
+      <div className="hamburger-wrapper">
+        <div className="hamburger">
+          <span />
+          <span />
+          <span />
+        </div>
 
-        <footer className="homepage-footer">
-          &copy; {new Date().getFullYear()} IdeaStone. Built to inspire.
-        </footer>
+      <div className="nav-menu">
+        <a href="/" className="nav-link">About</a>
+        <a href="/docs" className="nav-link">Portfolio</a>
+        <a href="/" className="nav-link">Contact&nbsp;&nbsp;Us</a>
       </div>
-    </div>
+      </div>
+       </nav>
+
+        <div className="homepage-overlay">
+          <header className="homepage-header">
+            <h1 className="homepage-animated-text">
+              <TextType
+                text={[ 
+                  "     Welcome to IdeaStone :)",
+                  "     Your capstone starts here...",
+                  "     Let's build something brilliant!!"
+                ]}
+                typingSpeed={75}
+                pauseDuration={1500}
+                showCursor={true}
+                cursorCharacter="|"
+                className="typing-text"
+                cursorClassName="cursor"
+              />
+            </h1>
+            <h1 className="homepage-title"> 
+              IdeaStone
+            </h1>
+
+            <p className="homepage-subtext">
+              Start your capstone with Levi's IdeaStone.
+            </p>
+          </header>
+
+          <div className="homepage-button-group">
+          <button
+                onClick={() => navigate('/generator')}
+                className="homepage-button" >
+               Get Started
+          </button>
+          <button
+                onClick={() => navigate('')}
+                className="homepage-button">
+                Learn More
+          </button>
+          </div>
+          </div>
+          </div>
+          
+          </div>
+       
+           <h1 style={{color: 'white', marginTop: '35px'}}
+       ref={headingRef}
+      className={`heading ${headingVisible ? 'visible' : ''}` }>
+        Developers
+          </h1>
+              
+          <Admin/>
+          <Admin/>
+          <Admin/>
+          <Admin/>
+          <Admin/>
+          <Admin/>
+    </>
   );
 };
 

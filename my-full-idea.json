@@ -1,0 +1,13 @@
+{
+  "title": "VR Escape Room Generator",
+  "description": "Auto-generate escape puzzles based on user profile",
+  "industry": "Gaming",
+  "type": "Web App",
+  "difficulty": "Intermediate",
+  "roles": ["Designer", "Developer"],
+  "technologies": ["React", "Three.js", "Node.js"],
+  "similarProjects": [
+    "https://github.com/example/escape-maker",
+    "http://demo.escape-game.io"
+  ]
+}

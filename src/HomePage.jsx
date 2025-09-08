@@ -1,19 +1,18 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
+import {motion } from 'framer-motion'
 import TextType from './Components/TextType.jsx';
 import OrbBackground from './Components/OrbBackground.jsx';
 import Admin from "./Components/Admin.jsx";
 import AuroraShader from './Background/AuroraShader.tsx'; 
+import Loader from './Components/Loader.jsx'
 import './HomePage.css';
 
-
-
 const HomePage = () => {
-
   const navigate = useNavigate();
-
   const headingRef = useRef(null);
   const [headingVisible, setHeadingVisible] = useState(false);
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -26,17 +25,26 @@ const HomePage = () => {
       },
       { threshold: 0.1 }
     );
-
     if (headingRef.current) {
       observer.observe(headingRef.current);
     }
-
     return () => observer.disconnect();
   }, []);
-
-
+    if (loading) {
+    return <Loader />;
+    }
+    const handleGetStarted = () =>{
+      setLoading(true)
+      setTimeout(()=> navigate('./Generator'), 800)
+    }
   return (
     <>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 1, ease: 'easeOut' }}
+      className="homepage"
+    >
     <div className='bg'>
       <AuroraShader/>
       <div className="homepage-container">
@@ -86,21 +94,19 @@ const HomePage = () => {
           </header>
 
           <div className="homepage-button-group">
-          <button
-                onClick={() => navigate('/generator')}
-                className="homepage-button" >
-               Get Started
+          <button onClick={handleGetStarted} className="homepage-button" >
+                      Get Started
           </button>
           <button
                 onClick={() => navigate('')}
                 className="homepage-button">
-                Learn More
+                      Learn More
           </button>
           </div>
           </div>
           </div>
-          
           </div>
+      </motion.div>
        
            <h1 style={{color: 'white', marginTop: '35px'}}
        ref={headingRef}

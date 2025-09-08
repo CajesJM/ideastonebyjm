@@ -3,7 +3,7 @@
 body{
   padding: 0%;
   margin: 0%;
-  background-color: #000000;
+  background: #000000;
   color: #fff;
 }
 
@@ -253,6 +253,7 @@ body{
    padding: 40px;
    
 }
+
 .card{
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 10px;
@@ -306,3 +307,8 @@ body{
   opacity: 1;
   transform: translateY(0);
 }
+
+
+
+
+

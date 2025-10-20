@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Renderer, Program, Mesh, Triangle, Vec3 } from "ogl";
-import "./Orb.css";
+import "../Style/Orb.css";
 
 export default function Orb({
   hue = 0,
@@ -10,7 +10,7 @@ export default function Orb({
 }) {
   const ctnDom = useRef(null);
 
-  const vert = /* glsl */ `
+  const vert =  `
     precision highp float;
     attribute vec2 position;
     attribute vec2 uv;

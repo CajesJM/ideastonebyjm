@@ -1,6 +1,8 @@
 
 import React from 'react';
-import Orb from './Orb';
+import Orb from "./Orb";  
+import "../Style/Orb.css";
+
 
 const OrbBackground = () => {
   return (

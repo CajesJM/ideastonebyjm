@@ -1,5 +1,5 @@
 import { Commet } from 'react-loading-indicators'
-import './Loader.css'
+import '../Style/Loader.css'
 
 export default function Loader(){
     return(

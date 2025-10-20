@@ -1,4 +1,4 @@
-import 'dotenv/config'
+//import 'dotenv/config'
 import cors from 'cors'
 import express from 'express'
 import mysql from 'mysql2/promise'
@@ -23,6 +23,7 @@ app.use((req, res, next) => {
 });
 
 
+// ✅ GET: fetch ideas
 app.get('/api/ideas', async (req, res) => {
   const { industry, type, difficulty } = req.query;
   console.log('Incoming filters:', req.query);
@@ -51,6 +52,7 @@ app.get('/api/ideas', async (req, res) => {
     roles:           JSON.parse(r.roles || '[]'),
     technologies:    JSON.parse(r.technologies || '[]'),
     similarProjects: JSON.parse(r.similarProjects || '[]'),
+    duration:        r.duration || null,   // ✅ make sure duration is included
   }));
 
   console.log('Filtered rows:', ideas);
@@ -58,10 +60,11 @@ app.get('/api/ideas', async (req, res) => {
 });
 
 
+// ✅ POST: create new idea
 app.post('/api/ideas', async (req, res) => {
   const {
     title, description, industry, type,
-    difficulty, roles, technologies, similarProjects
+    difficulty, roles, technologies, similarProjects, duration
   } = req.body
 
   if (!title || !industry || !type) {
@@ -74,8 +77,8 @@ app.post('/api/ideas', async (req, res) => {
     const [result] = await pool.query(
       `INSERT INTO ideas
          (title, description, industry, type,
-          difficulty, roles, technologies, similarProjects)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          difficulty, roles, technologies, similarProjects, duration)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         title,
         description || null,
@@ -84,7 +87,8 @@ app.post('/api/ideas', async (req, res) => {
         difficulty || null,
         JSON.stringify(roles || []),
         JSON.stringify(technologies || []),
-        JSON.stringify(similarProjects || [])
+        JSON.stringify(similarProjects || []),
+        duration || null
       ]
     )
 
@@ -97,6 +101,7 @@ app.post('/api/ideas', async (req, res) => {
     idea.roles           = JSON.parse(idea.roles)
     idea.technologies    = JSON.parse(idea.technologies)
     idea.similarProjects = JSON.parse(idea.similarProjects)
+    idea.duration        = idea.duration || null
 
     return res.status(201).json(idea)
   } catch (err) {

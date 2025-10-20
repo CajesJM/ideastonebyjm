@@ -1,12 +1,12 @@
 import { useEffect } from 'react';
 
 function IdeaCard({ idea }) {
-  // 1) DEBUG: see exactly what props you're getting
+
   useEffect(() => {
     console.log('[IdeaCard] idea prop:', idea);
   }, [idea]);
 
-  // 2) Normalize similarProjects into a proper array
+
   let similar = [];
   if (Array.isArray(idea.similarProjects)) {
     similar = idea.similarProjects;
@@ -22,15 +22,18 @@ function IdeaCard({ idea }) {
     <div className="idea-card fade-in">
       <h2>{idea.title}</h2>
       <p>{idea.description}</p>
-      <div><strong>Industry:</strong> {idea.industry}</div>
-      <div><strong>Type:</strong> {idea.type}</div>
-      <div><strong>Difficulty:</strong> {idea.difficulty}</div>
+      <div><strong>Industry:</strong> {idea.industry || 'Not specified'}</div>
+      <div><strong>Type:</strong> {idea.type || 'Not specified'}</div>
+      <div><strong>Difficulty:</strong> {idea.difficulty || 'Not specified'}</div>
+      <div><strong>Duration:</strong> {idea.duration || 'Not specified'}</div>
+
       <div>
         <strong>Roles:</strong>{' '}
         {Array.isArray(idea.roles)
           ? idea.roles.join(', ')
           : idea.roles || 'No roles specified'}
       </div>
+
       <div>
         <strong>Technologies:</strong>{' '}
         {Array.isArray(idea.technologies)

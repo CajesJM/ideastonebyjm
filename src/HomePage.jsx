@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion'
+import { Link } from 'react-router-dom';
 import TextType from './Components/TextType.jsx';
 import OrbBackground from './Components/OrbBackground.jsx';
 import Admin from "./Components/Admin.jsx";
@@ -15,6 +16,7 @@ const HomePage = () => {
   const [headingVisible, setHeadingVisible] = useState(false);
   const [loading, setLoading] = useState(false)
   const [isContactOpen, setIsContactOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -62,9 +64,9 @@ const HomePage = () => {
                 </div>
 
                 <div className="nav-menu">
-                  <a href="/" className="nav-link">About</a>
-                  <a href="/docs" className="nav-link">Portfolio</a>
-                  <a href="/" className="nav-link">Contact&nbsp;&nbsp;Us</a>
+                  <Link to="/About" className="nav-link">About</Link>
+                  <Link to="/showcase" className="nav-link">Project Showcase</Link>
+                  <Link to="/support" className="nav-link">Get Help</Link>
                 </div>
               </div>
             </nav>
@@ -109,7 +111,108 @@ const HomePage = () => {
           </div>
         </div>
       </motion.div>
-      
+
+      {/* University Partnership Section */}
+      <section className="university-section">
+        <div className="university-container">
+          <motion.div
+            className="university-card"
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            viewport={{ once: true }}
+          >
+            <div className="university-background-elements">
+              <div className="uni-orb uni-1"></div>
+              <div className="uni-orb uni-2"></div>
+            </div>
+
+            <div className="university-content">
+              <motion.div
+                className="university-badge"
+                initial={{ scale: 0 }}
+                whileInView={{ scale: 1 }}
+                transition={{ delay: 0.3, duration: 0.6 }}
+              >
+                <i className="bi bi-award"></i>
+              </motion.div>
+
+              <motion.h2
+                className="university-title"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.6 }}
+              >
+                Developed at Trinidad Municipal College
+              </motion.h2>
+
+              <motion.div
+                className="university-logo-container"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                transition={{ delay: 0.5, duration: 0.8 }}
+              >
+                <div className="university-logo">
+
+                  <div className="logo-image-container">
+                    <img
+                      src="src/assets/tmc_logo.png"
+                      alt="Trinidad Municipal College Logo"
+                      className="college-logo"
+                    />
+                  </div>
+                  <div className="logo-text">
+                    <span>Trinidad Municipal College</span>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.p
+                className="university-description"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6, duration: 0.6 }}
+              >
+                Proudly developed and academically endorsed by <strong>Trinidad Municipal College</strong>.
+                This platform represents our commitment to innovative education and student success in capstone project development.
+              </motion.p>
+
+              <motion.div
+                className="partnership-features"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                transition={{ delay: 0.7, duration: 0.6 }}
+              >
+                <div className="partnership-feature">
+                  <i className="bi bi-patch-check"></i>
+                  <span>College-Developed</span>
+                </div>
+                <div className="partnership-feature">
+                  <i className="bi bi-mortarboard"></i>
+                  <span>Academic Excellence</span>
+                </div>
+                <div className="partnership-feature">
+                  <i className="bi bi-shield-check"></i>
+                  <span>Quality Assured</span>
+                </div>
+              </motion.div>
+
+              <motion.div
+                className="college-mission"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8, duration: 0.6 }}
+              >
+                <p>
+                  <i className="bi bi-quote"></i>
+                  Empowering students through innovative technology and practical education.
+                </p>
+              </motion.div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       <Admin />
 
       <section className="chat-area-section">
@@ -137,20 +240,6 @@ const HomePage = () => {
             >
 
               <div className="chat-header">
-                <motion.div
-                  className="chat-icon-wrapper"
-                  initial={{ scale: 0 }}
-                  whileInView={{ scale: 1 }}
-                  transition={{
-                    delay: 0.4,
-                    duration: 0.5,
-                    type: "spring",
-                    stiffness: 200
-                  }}
-                >
-                  <i className="bi bi-chat-heart"></i>
-                </motion.div>
-
                 <motion.h2
                   className="chat-title"
                   initial={{ opacity: 0, y: 20 }}
@@ -198,8 +287,8 @@ const HomePage = () => {
                   <div className="feature-icon">
                     <i className="bi bi-lightbulb"></i>
                   </div>
-                  <h4>Idea Refinement</h4>
-                  <p>Polish your project concepts</p>
+                  <h4>Personal Support</h4>
+                  <p>One-on-one help from IdeaStone Developer's</p>
                 </div>
               </motion.div>
 
@@ -235,6 +324,128 @@ const HomePage = () => {
         isOpen={isContactOpen}
         onClose={() => setIsContactOpen(false)}
       />
+
+      {/* Logo Loop Section */}
+      <section className="logo-loop-section">
+        <div className="logo-loop-container">
+          <motion.div
+            className="logo-loop-card"
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            viewport={{ once: true }}
+          >
+            <div className="logo-loop-content">
+              <motion.h2
+                className="logo-loop-title"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.6 }}
+              >
+                Trusted by Students From
+              </motion.h2>
+
+              <motion.p
+                className="logo-loop-subtitle"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.6 }}
+              >
+                Join students from leading institutions who use IdeaStone for their capstone projects.
+              </motion.p>
+
+              {/* Logo Marquee Container */}
+              <div className="logo-marquee">
+                <div className="logo-track">
+                  <div className="logo-item">
+                    <div className="logo-wrapper">
+                      <img src="src/assets/tmc_logo.png" alt="Trinidad Municipal College" className="logo-loop-image" />
+                      <span>Trinidad Municipal College</span>
+                    </div>
+                  </div>
+                  <div className="logo-item">
+                    <div className="logo-wrapper">
+                      <i className="bi bi-building"></i>
+                      <span>Stanford</span>
+                    </div>
+                  </div>
+                  <div className="logo-item">
+                    <div className="logo-wrapper">
+                      <i className="bi bi-building"></i>
+                      <span>MIT</span>
+                    </div>
+                  </div>
+                  <div className="logo-item">
+                    <div className="logo-wrapper">
+                      <i className="bi bi-building"></i>
+                      <span>UC Berkeley</span>
+                    </div>
+                  </div>
+                  <div className="logo-item">
+                    <div className="logo-wrapper">
+                      <i className="bi bi-building"></i>
+                      <span>Carnegie Mellon</span>
+                    </div>
+                  </div>
+                  <div className="logo-item">
+                    <div className="logo-wrapper">
+                      <i className="bi bi-building"></i>
+                      <span>University of Toronto</span>
+                    </div>
+                  </div>
+
+
+                  <div className="logo-item">
+                    <div className="logo-wrapper">
+                      <img src="src/assets/tmc_logo.png" alt="Trinidad Municipal College" className="logo-loop-image" />
+                      <span>Trinidad Municipal College</span>
+                    </div>
+                  </div>
+                  <div className="logo-item">
+                    <div className="logo-wrapper">
+                      <i className="bi bi-building"></i>
+                      <span>Stanford</span>
+                    </div>
+                  </div>
+                  <div className="logo-item">
+                    <div className="logo-wrapper">
+                      <i className="bi bi-building"></i>
+                      <span>MIT</span>
+                    </div>
+                  </div>
+                  <div className="logo-item">
+                    <div className="logo-wrapper">
+                      <i className="bi bi-building"></i>
+                      <span>UC Berkeley</span>
+                    </div>
+                  </div>
+                  <div className="logo-item">
+                    <div className="logo-wrapper">
+                      <i className="bi bi-building"></i>
+                      <span>Carnegie Mellon</span>
+                    </div>
+                  </div>
+                  <div className="logo-item">
+                    <div className="logo-wrapper">
+                      <i className="bi bi-building"></i>
+                      <span>University of Toronto</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <motion.div
+                className="logo-loop-cta"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6, duration: 0.6 }}
+              >
+                <p>Your university could be next!</p>
+              </motion.div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
     </div>
   );
 };

@@ -4,18 +4,18 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-"scripts": { 
-  "dev": "vite",
-  "build": "vite build",
-  "lint": "eslint .",
-  "preview": "vite preview",
-  "serve": "node server/server.js",
-  "serve:watch": "nodemon server/server.js",
-  "serve:laravel": "php ../ideastone-backendxlaravel/artisan serve",
-  "predeploy": "npm run build",
-  "deploy": "gh-pages -d docs",
-  "start": "concurrently \"npm run serve:laravel\" \"npm run dev\""
-},
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "serve": "node server/server.js",
+    "serve:watch": "nodemon server/server.js",
+    "serve:laravel": "php ../ideastone-backendxlaravel/artisan serve",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d docs",
+    "start": "concurrently \"npm run serve:laravel\" \"npm run dev\""
+  },
   "dependencies": {
     "bootstrap-icons": "^1.13.1",
     "cors": "^2.8.5",
@@ -42,6 +42,7 @@
     "gh-pages": "^6.3.0",
     "globals": "^16.3.0",
     "nodemon": "^3.1.10",
+    "typescript": "~5.9.2",
     "vite": "^7.1.2"
   }
 }

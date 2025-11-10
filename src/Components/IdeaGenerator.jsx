@@ -1,13 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { useNavigate } from 'react-router-dom';
+import { useSubscription } from '../Context/SubscriptionContext';
 import IdeaCard from './IdeaCard';
 import '../Style/IdeaGenerator.css';
 
 function IdeaGenerator() {
   const [ideas, setIdeas] = useState([]);
   const [selectedIdea, setSelectedIdea] = useState(null);
-  const [history, setHistory] = useState([]);
+
+  const [history, setHistory] = useState(() => {
+    const savedHistory = localStorage.getItem('ideastone_recent_ideas');
+    return savedHistory ? JSON.parse(savedHistory) : [];
+  });
+
   const [isLoading, setIsLoading] = useState(false);
   const [filters, setFilters] = useState({
     industry: '',
@@ -22,8 +28,34 @@ function IdeaGenerator() {
   const dropdownRefs = useRef({});
   const [enhancements, setEnhancements] = useState(null);
   const [isEnhancing, setIsEnhancing] = useState(false);
+  const [savedIdeas, setSavedIdeas] = useState([]);
+  const [hasEnhancedCurrentIdea, setHasEnhancedCurrentIdea] = useState(false);
+  const [showSavedIdeas, setShowSavedIdeas] = useState(false);
 
-  // Close dropdown when clicking outside - Updated version
+  useEffect(() => {
+    const saved = localStorage.getItem('savedIdeas');
+    if (saved) {
+      setSavedIdeas(JSON.parse(saved));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (selectedIdea) {
+      setHasEnhancedCurrentIdea(false);
+      setEnhancements(null);
+    }
+  }, [selectedIdea]);
+
+  const {
+    canGenerate,
+    incrementGeneration,
+    getRemainingGenerations,
+    isSubscribed,
+    generationCount,
+    currentPlan,
+    hasNoPlan
+  } = useSubscription();
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       let clickedOutside = true;
@@ -39,7 +71,6 @@ function IdeaGenerator() {
       }
     };
 
-    // Use click instead of mousedown for better compatibility
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
@@ -60,12 +91,32 @@ function IdeaGenerator() {
   };
 
   useEffect(() => {
-    setSelectedIdea(null);
-    setHistory([]);
     fetchIdeas();
+
+    const isMakingSignificantChange =
+      (filters.search && !selectedIdea) ||
+      (filters.industry && filters.industry !== selectedIdea?.industry) ||
+      (filters.type && filters.type !== selectedIdea?.type) ||
+      (filters.difficulty && filters.difficulty !== selectedIdea?.difficulty) ||
+      (filters.duration && filters.duration !== selectedIdea?.duration);
+
+    if (isMakingSignificantChange) {
+      setSelectedIdea(null);
+    }
   }, [filters]);
 
+  const clearHistory = () => {
+    setHistory([]);
+    localStorage.removeItem('ideastone_recent_ideas');
+    showSimpleToast('Recent ideas cleared');
+  };
+
   const generateIdea = () => {
+    if (!canGenerate()) {
+      showSimpleToast(`Generation limit reached! ${hasNoPlan ? 'Activate free plan to get started.' : isSubscribed ? 'Monthly limit exceeded.' : 'Subscribe for more ideas.'}`);
+      return;
+    }
+
     const filteredIdeas = ideas.filter(idea =>
       (!filters.industry || idea.industry === filters.industry) &&
       (!filters.type || idea.type === filters.type) &&
@@ -78,13 +129,28 @@ function IdeaGenerator() {
 
     setIsLoading(true);
     setSelectedIdea(null);
+    setEnhancements(null);
+    setHasEnhancedCurrentIdea(false);
 
     setTimeout(() => {
       try {
         const index = Math.floor(Math.random() * filteredIdeas.length);
         const newIdea = filteredIdeas[index];
+
+        const updatedHistory = [newIdea, ...history.slice(0, 7)]; // Keep max 8 items
+        setHistory(updatedHistory);
+        localStorage.setItem('ideastone_recent_ideas', JSON.stringify(updatedHistory));
+
         setSelectedIdea(newIdea);
-        setHistory(prev => [newIdea, ...prev.slice(0, 7)]);
+
+        incrementGeneration();
+
+        const remaining = getRemainingGenerations();
+        if (remaining !== 'Unlimited') {
+          showSimpleToast(`Idea generated! ${remaining} ${remaining === 1 ? 'generation' : 'generations'} remaining`);
+        } else {
+          showSimpleToast('Idea generated! Unlimited generations remaining');
+        }
       } catch (err) {
         console.error('Error generating idea:', err);
       } finally {
@@ -104,9 +170,88 @@ function IdeaGenerator() {
         showSimpleToast('Idea copied to clipboard!');
       } catch (err) {
         console.error('Failed to copy:', err);
-        showSimpleToast('❌ Failed to copy idea');
+        showSimpleToast('Failed to copy idea');
       }
     }
+  };
+
+  // Save Idea Functionality
+  const saveIdea = () => {
+    if (!selectedIdea) return;
+
+    const ideaToSave = {
+      ...selectedIdea,
+      id: selectedIdea.id || Date.now(),
+      savedAt: new Date().toISOString(),
+      enhancements: enhancements
+    };
+
+    const isAlreadySaved = savedIdeas.some(idea =>
+      idea.id === ideaToSave.id || idea.title === ideaToSave.title
+    );
+
+    if (isAlreadySaved) {
+      const updatedSavedIdeas = savedIdeas.filter(idea =>
+        !(idea.id === ideaToSave.id || idea.title === ideaToSave.title)
+      );
+      setSavedIdeas(updatedSavedIdeas);
+      localStorage.setItem('savedIdeas', JSON.stringify(updatedSavedIdeas));
+      showSimpleToast('Idea removed from saved ideas!');
+    } else {
+      const updatedSavedIdeas = [ideaToSave, ...savedIdeas];
+      setSavedIdeas(updatedSavedIdeas);
+      localStorage.setItem('savedIdeas', JSON.stringify(updatedSavedIdeas));
+      showSimpleToast('Idea saved successfully!');
+    }
+  };
+
+  const removeSavedIdea = (ideaToRemove) => {
+    const updatedSavedIdeas = savedIdeas.filter(idea =>
+      !(idea.id === ideaToRemove.id && idea.title === ideaToRemove.title)
+    );
+    setSavedIdeas(updatedSavedIdeas);
+    localStorage.setItem('savedIdeas', JSON.stringify(updatedSavedIdeas));
+    showSimpleToast('Idea removed from saved ideas!');
+  };
+
+  // Load saved idea
+  const loadSavedIdea = (savedIdea) => {
+    setSelectedIdea(savedIdea);
+    setShowSavedIdeas(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const shareIdea = async () => {
+    if (!selectedIdea) return;
+
+    const shareText = `Check out this capstone project idea: "${selectedIdea.title}"\n\nIndustry: ${selectedIdea.industry}\nType: ${selectedIdea.type}\nDifficulty: ${selectedIdea.difficulty}\nDuration: ${selectedIdea.duration}\n\nGenerated with IdeaStone - Your capstone project idea generator!`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Capstone Project Idea',
+          text: shareText,
+          url: window.location.href,
+        });
+        showSimpleToast('Idea shared successfully!');
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error('Error sharing:', err);
+          fallbackShare(shareText);
+        }
+      }
+    } else {
+      fallbackShare(shareText);
+    }
+  };
+
+  // Fallback share method for desktop
+  const fallbackShare = (shareText) => {
+    navigator.clipboard.writeText(shareText).then(() => {
+      showSimpleToast('Idea details copied to clipboard! Share it with your friends.');
+    }).catch(() => {
+      alert(`Share this idea:\n\n${shareText}`);
+    });
   };
 
   const showSimpleToast = (message) => {
@@ -120,12 +265,11 @@ function IdeaGenerator() {
     toast.className = 'simple-toast';
     toast.innerHTML = `
     <div class="toast-content">
-      <i class="bi bi-clipboard-check"></i>
+      <i class="bi bi-caret-left-fill"></i>
       <span>${message}</span>
     </div>
   `;
     document.body.appendChild(toast);
-
 
     setTimeout(() => {
       toast.classList.add('show');
@@ -164,9 +308,10 @@ function IdeaGenerator() {
     (!filters.search || idea.title.toLowerCase().includes(filters.search.toLowerCase()))
   ).length > 0;
 
-  // Select random emoji for title
-  const titleEmojis = ['💎', '🚀', '✨', '🔥', '⭐', '🎯', '⚡'];
-  const randomEmoji = titleEmojis[Math.floor(Math.random() * titleEmojis.length)];
+  // Check if current idea is already saved
+  const isIdeaSaved = selectedIdea && savedIdeas.some(idea =>
+    idea.id === selectedIdea.id || idea.title === selectedIdea.title
+  );
 
   // AI Enhancement Functions
   const generateVariations = (idea) => {
@@ -251,6 +396,10 @@ function IdeaGenerator() {
   };
 
   const enhanceIdea = async (idea) => {
+    if (hasEnhancedCurrentIdea) {
+      showSimpleToast('You have already enhanced this idea!');
+      return;
+    }
     setIsEnhancing(true);
 
     // Simulate AI processing time
@@ -265,7 +414,9 @@ function IdeaGenerator() {
     };
 
     setEnhancements(enhancedIdea);
+    setHasEnhancedCurrentIdea(true);
     setIsEnhancing(false);
+    showSimpleToast('Idea enhanced with AI!');
   };
 
   const generateTimeline = (difficulty) => {
@@ -281,17 +432,22 @@ function IdeaGenerator() {
 
   const clearEnhancements = () => {
     setEnhancements(null);
+    setHasEnhancedCurrentIdea(false);
+    showSimpleToast('Enhancements cleared');
+  };
+
+  // Get plan display name for badge
+  const getPlanDisplayName = () => {
+    if (hasNoPlan) return 'No Plan';
+    if (currentPlan?.type === 'free') return 'Free';
+    if (currentPlan?.type === 'starter') return 'Starter';
+    if (currentPlan?.type === 'pro') return 'Pro';
+    if (currentPlan?.type === 'unlimited') return 'Unlimited';
+    return 'Premium';
   };
 
   return (
     <div className="idea-generator-container">
-      {/* Animated Background Elements */}
-      <div className="floating-shapes">
-        <div className="shape shape-1"></div>
-        <div className="shape shape-2"></div>
-        <div className="shape shape-3"></div>
-        <div className="shape shape-4"></div>
-      </div>
 
       <header className="app-header-enhanced">
         <div className="header-left">
@@ -302,16 +458,44 @@ function IdeaGenerator() {
         </div>
 
         <div className="header-center">
-          <h1 className="title-wrapper">
-            <span className="title-emoji">{randomEmoji}</span>
-            <span className="title-gradient">IdeaStone</span>
-            <span className="title-emoji">{randomEmoji}</span>
-          </h1>
+          <h1 className="title-gradient">IdeaStone</h1>
           <p className="subtitle">Generate your next amazing capstone project idea</p>
         </div>
 
-        {/* Right: Search Bar */}
+        {/* Right: Search Bar and Subscription Status */}
         <div className="header-right">
+
+
+          {/* Subscription Status */}
+          <div className="subscription-status-generator">
+            {hasNoPlan ? (
+              <span className="no-plan-badge-generator">
+                <i className="bi bi-hourglass-split"></i>
+                No Plan Activated
+              </span>
+            ) : isSubscribed ? (
+              <span className={`premium-badge-generator ${currentPlan?.type}`}>
+                <i className="bi bi-star-fill"></i>
+                {getPlanDisplayName()}
+                {currentPlan?.type !== 'unlimited' && currentPlan?.type !== 'free' && (
+                  <span className="plan-count-generator">
+                    {getRemainingGenerations()}
+                  </span>
+                )}
+                {currentPlan?.type === 'free' && (
+                  <span className="plan-count-generator">
+                    {getRemainingGenerations()}
+                  </span>
+                )}
+              </span>
+            ) : (
+              <span className="free-badge-generator">
+                <i className="bi bi-arrow-repeat"></i>
+                {getRemainingGenerations()} gens left
+              </span>
+            )}
+          </div>
+
           <div className="search-container-header">
             <i className={`bi bi-search ${isTyping ? 'pulsing' : ''}`}></i>
             <input
@@ -345,7 +529,7 @@ function IdeaGenerator() {
               className="dropdown-header"
               onClick={() => toggleDropdown('industry')}
             >
-              <span className="filter-icon">🌍</span>
+              <span className="filter-icon"><i className="bi bi-building"></i></span>
               <span className="filter-text">{filters.industry || "All Industries"}</span>
               <span className={`dropdown-arrow ${activeDropdown === 'industry' ? 'rotated' : ''}`}>▼</span>
             </div>
@@ -358,7 +542,7 @@ function IdeaGenerator() {
                   handleFilterChange('industry', '');
                 }}
               >
-                🌍 All Industries
+                <i className="bi bi-building"></i> All Industries
               </div>
               {['Healthcare', 'Education', 'Finance', 'E-commerce', 'Entertainment', 'Gaming', 'Agriculture', 'Transportation', 'Environment'].map(industry => (
                 <div
@@ -370,15 +554,15 @@ function IdeaGenerator() {
                     handleFilterChange('industry', industry);
                   }}
                 >
-                  {industry === 'Healthcare' ? '🏥' :
-                    industry === 'Education' ? '📚' :
-                      industry === 'Finance' ? '💰' :
-                        industry === 'E-commerce' ? '🛒' :
-                          industry === 'Entertainment' ? '🎬' :
-                            industry === 'Gaming' ? '🎮' :
-                              industry === 'Agriculture' ? '🌾' :
-                                industry === 'Transportation' ? '🚗' :
-                                  industry === 'Environment' ? '🌱' : '🌍'} {industry}
+                  {industry === 'Healthcare' ? <i className="bi bi-hospital"></i> :
+                    industry === 'Education' ? <i className="bi bi-book"></i> :
+                      industry === 'Finance' ? <i className="bi bi-currency-dollar"></i> :
+                        industry === 'E-commerce' ? <i className="bi bi-cart"></i> :
+                          industry === 'Entertainment' ? <i className="bi bi-film"></i> :
+                            industry === 'Gaming' ? <i className="bi bi-controller"></i> :
+                              industry === 'Agriculture' ? <i className="bi bi-tree"></i> :
+                                industry === 'Transportation' ? <i className="bi bi-truck"></i> :
+                                  industry === 'Environment' ? <i className="bi bi-globe"></i> : <i className="bi bi-building"></i>} {industry}
                 </div>
               ))}
             </div>
@@ -393,7 +577,7 @@ function IdeaGenerator() {
               className="dropdown-header"
               onClick={() => toggleDropdown('type')}
             >
-              <span className="filter-icon">📂</span>
+              <span className="filter-icon"><i className="bi bi-grid"></i></span>
               <span className="filter-text">{filters.type || "All Types"}</span>
               <span className={`dropdown-arrow ${activeDropdown === 'type' ? 'rotated' : ''}`}>▼</span>
             </div>
@@ -406,7 +590,7 @@ function IdeaGenerator() {
                   handleFilterChange('type', '');
                 }}
               >
-                📂 All Types
+                <i className="bi bi-grid"></i> All Types
               </div>
               {['Web App', 'Mobile App', 'Desktop App', 'AI/ML', 'IoT', 'Game', 'Data Science', 'Blockchain', 'Cybersecurity'].map(type => (
                 <div
@@ -418,15 +602,15 @@ function IdeaGenerator() {
                     handleFilterChange('type', type);
                   }}
                 >
-                  {type === 'Web App' ? '🌐' :
-                    type === 'Mobile App' ? '📱' :
-                      type === 'Desktop App' ? '🖥️' :
-                        type === 'AI/ML' ? '🤖' :
-                          type === 'IoT' ? '📡' :
-                            type === 'Game' ? '🎮' :
-                              type === 'Data Science' ? '📊' :
-                                type === 'Blockchain' ? '⛓️' :
-                                  type === 'Cybersecurity' ? '🛡️' : '📂'} {type}
+                  {type === 'Web App' ? <i className="bi bi-globe"></i> :
+                    type === 'Mobile App' ? <i className="bi bi-phone"></i> :
+                      type === 'Desktop App' ? <i className="bi bi-laptop"></i> :
+                        type === 'AI/ML' ? <i className="bi bi-cpu"></i> :
+                          type === 'IoT' ? <i className="bi bi-wifi"></i> :
+                            type === 'Game' ? <i className="bi bi-controller"></i> :
+                              type === 'Data Science' ? <i className="bi bi-graph-up"></i> :
+                                type === 'Blockchain' ? <i className="bi bi-link-45deg"></i> :
+                                  type === 'Cybersecurity' ? <i className="bi bi-shield-lock"></i> : <i className="bi bi-grid"></i>} {type}
                 </div>
               ))}
             </div>
@@ -441,7 +625,7 @@ function IdeaGenerator() {
               className="dropdown-header"
               onClick={() => toggleDropdown('difficulty')}
             >
-              <span className="filter-icon">🎯</span>
+              <span className="filter-icon"><i className="bi bi-bar-chart"></i></span>
               <span className="filter-text">{filters.difficulty || "All Levels"}</span>
               <span className={`dropdown-arrow ${activeDropdown === 'difficulty' ? 'rotated' : ''}`}>▼</span>
             </div>
@@ -454,7 +638,7 @@ function IdeaGenerator() {
                   handleFilterChange('difficulty', '');
                 }}
               >
-                🎯 All Levels
+                <i className="bi bi-bar-chart"></i> All Levels
               </div>
               {['Beginner', 'Intermediate', 'Advanced', 'Expert'].map(difficulty => (
                 <div
@@ -466,10 +650,10 @@ function IdeaGenerator() {
                     handleFilterChange('difficulty', difficulty);
                   }}
                 >
-                  {difficulty === 'Beginner' ? '🟢' :
-                    difficulty === 'Intermediate' ? '🟡' :
-                      difficulty === 'Advanced' ? '🔴' :
-                        difficulty === 'Expert' ? '💎' : '🎯'} {difficulty}
+                  {difficulty === 'Beginner' ? <i className="bi bi-circle-fill text-success"></i> :
+                    difficulty === 'Intermediate' ? <i className="bi bi-circle-fill text-warning"></i> :
+                      difficulty === 'Advanced' ? <i className="bi bi-circle-fill text-danger"></i> :
+                        difficulty === 'Expert' ? <i className="bi bi-diamond-fill text-primary"></i> : <i className="bi bi-bar-chart"></i>} {difficulty}
                 </div>
               ))}
             </div>
@@ -484,7 +668,7 @@ function IdeaGenerator() {
               className="dropdown-header"
               onClick={() => toggleDropdown('duration')}
             >
-              <span className="filter-icon">⏳</span>
+              <span className="filter-icon"><i className="bi bi-clock"></i></span>
               <span className="filter-text">{filters.duration || "All Durations"}</span>
               <span className={`dropdown-arrow ${activeDropdown === 'duration' ? 'rotated' : ''}`}>▼</span>
             </div>
@@ -497,7 +681,7 @@ function IdeaGenerator() {
                   handleFilterChange('duration', '');
                 }}
               >
-                ⏳ All Durations
+                <i className="bi bi-clock"></i> All Durations
               </div>
               {['Short-term', 'Medium', 'Long-term'].map(duration => (
                 <div
@@ -509,44 +693,103 @@ function IdeaGenerator() {
                     handleFilterChange('duration', duration);
                   }}
                 >
-                  {duration === 'Short-term' ? '⚡' :
-                    duration === 'Medium' ? '📅' :
-                      duration === 'Long-term' ? '🏗️' : '⏳'} {duration}
+                  {duration === 'Short-term' ? <i className="bi bi-lightning-fill"></i> :
+                    duration === 'Medium' ? <i className="bi bi-calendar-week"></i> :
+                      duration === 'Long-term' ? <i className="bi bi-calendar-month"></i> : <i className="bi bi-clock"></i>} {duration}
                 </div>
               ))}
             </div>
           </div>
         </div>
-
-
       </div>
 
-      {/* Generate Button */}
+      {/* Generate Button with Subscription Info */}
       <div className="generate-section">
+        <div className="subscription-info-generator">
+          <div className="usage-display">
+            <span className={`usage-badge ${hasNoPlan ? 'no-plan' : isSubscribed ? 'premium' : 'free'}`}>
+              {hasNoPlan ? (
+                <>
+                  <i className="bi bi-hourglass-split"></i>
+                  No Plan Activated
+                </>
+              ) : isSubscribed ? (
+                <>
+                  <i className="bi bi-star-fill"></i> &nbsp;
+                  {getPlanDisplayName()}
+                  {currentPlan?.type !== 'unlimited' && currentPlan?.type !== 'free' && (
+                    <span className="plan-count-generator">
+                      {getRemainingGenerations()}
+                    </span>
+                  )}
+                  {currentPlan?.type === 'free' && (
+                    <span className="plan-count-generator">
+                    </span>
+                  )}
+                </>
+              ) : (
+                <>
+                  <i className="bi bi-arrow-repeat"></i>
+                  {getRemainingGenerations()} gens left
+                </>
+              )}
+            </span>
+            <span className="generation-count">
+              Generations left: <strong>{getRemainingGenerations()}</strong>
+            </span>
+          </div>
+        </div>
+
         <button
-          className={`generate-btn-enhanced ${isLoading ? 'loading' : ''} ${!hasFilteredIdeas ? 'disabled' : ''}`}
+          className={`generate-btn ${isLoading ? 'loading' : ''} ${!hasFilteredIdeas ? 'disabled' : ''} ${!canGenerate() ? 'limit-reached' : ''}`}
           onClick={generateIdea}
-          disabled={isLoading || !hasFilteredIdeas}
+          disabled={isLoading || !hasFilteredIdeas || !canGenerate()}
         >
           {isLoading ? (
             <>
               <div className="spinner"></div>
-              <span>Generating Your IdeaStone...</span>
+              <span>Generating Idea...</span>
+            </>
+          ) : !canGenerate() ? (
+            <>
+              <i className="bi bi-lock"></i>
+              <span>{hasNoPlan ? 'Activate Free Plan' : 'Limit Reached - Subscribe'}</span>
             </>
           ) : !hasFilteredIdeas ? (
             <>
-              <i className="bi bi-gem"></i>
-              <span>No IdeaStones Available</span>
+              <i className="bi bi-search"></i>
+              <span>No Ideas Available</span>
             </>
           ) : (
             <>
-              <span>Generate IdeaStone</span>
+              <i className="bi bi-lightning"></i>
+              <span>Generate Idea</span>
             </>
           )}
         </button>
 
+        {!canGenerate() && (
+          <div className="upgrade-prompt-generator">
+            <div className="upgrade-content">
+              <i className="bi bi-rocket-takeoff"></i>
+              <div className="upgrade-text">
+                <h4>{hasNoPlan ? 'Get Started with Free Plan!' : 'Want Unlimited Ideas?'}</h4>
+                <p>{hasNoPlan
+                  ? 'Activate your free plan to get 10 idea generations and start your capstone journey!'
+                  : 'You\'ve reached your free generation limit. Subscribe to unlock unlimited capstone ideas!'}</p>
+              </div>
+              <button
+                className="upgrade-now-btn"
+                onClick={() => navigate('/')}
+              >
+                {hasNoPlan ? 'Activate Free Plan' : 'Upgrade Now'}
+              </button>
+            </div>
+          </div>
+        )}
+
         {!isLoading && !hasFilteredIdeas && (
-          <div className="no-results-enhanced">
+          <div className="no-results">
             <i className="bi bi-emoji-frown"></i>
             <p>No capstone ideas found for "<strong>{filters.industry || 'All Industries'}</strong>"</p>
             <p>Try adjusting your filters to discover more ideas!</p>
@@ -556,22 +799,24 @@ function IdeaGenerator() {
 
       {/* Main Content Area */}
       <div className="main-content">
-        {/* Idea Display Card */}
         <div className="idea-display-section">
           <div className={`idea-card-container ${selectedIdea ? 'has-idea' : ''} ${isLoading ? 'loading' : ''}`}>
             {selectedIdea ? (
               <>
                 <IdeaCard idea={selectedIdea} />
                 <div className="idea-actions">
-                  <button className="copy-btn-enhanced" onClick={copyToClipboard}>
+                  <button className="copy-btn" onClick={copyToClipboard}>
                     <i className="bi bi-copy"></i>
                     Copy Idea
                   </button>
-                  <button className="save-btn">
-                    <i className="bi bi-bookmark"></i>
-                    Save
+                  <button
+                    className={`save-btn ${isIdeaSaved ? 'saved' : ''}`}
+                    onClick={saveIdea}
+                  >
+                    <i className={`bi ${isIdeaSaved ? 'bi-bookmark-check-fill' : 'bi-bookmark'}`}></i>
+                    {isIdeaSaved ? 'Unsave' : 'Save'}
                   </button>
-                  <button className="share-btn">
+                  <button className="share-btn" onClick={shareIdea}>
                     <i className="bi bi-share"></i>
                     Share
                   </button>
@@ -581,20 +826,25 @@ function IdeaGenerator() {
                 {selectedIdea && (
                   <div className="ai-enhancement-section">
                     <div className="enhancement-header">
-                      <h3>🚀 AI-Powered Enhancements</h3>
+                      <h3>AI-Powered Enhancements</h3>
                       <p>Get personalized suggestions to level up your project</p>
                     </div>
 
                     <div className="enhancement-actions">
                       <button
-                        className={`enhance-btn ${isEnhancing ? 'loading' : ''}`}
+                        className={`enhance-btn ${isEnhancing ? 'loading' : ''} ${hasEnhancedCurrentIdea ? 'used' : ''}`}
                         onClick={() => enhanceIdea(selectedIdea)}
-                        disabled={isEnhancing}
+                        disabled={isEnhancing || hasEnhancedCurrentIdea}
                       >
                         {isEnhancing ? (
                           <>
                             <div className="spinner-small"></div>
                             <span>AI is Enhancing Your Idea...</span>
+                          </>
+                        ) : hasEnhancedCurrentIdea ? (
+                          <>
+                            <i className="bi bi-check-circle-fill"></i>
+                            <span>Enhanced with AI</span>
                           </>
                         ) : (
                           <>
@@ -619,13 +869,13 @@ function IdeaGenerator() {
                       <div className="enhancements-grid">
                         {/* Variations */}
                         <div className="enhancement-card">
-                          <div className="enhancement-icon">🔄</div>
+                          <div className="enhancement-icon"><i className="bi bi-arrow-repeat"></i></div>
                           <h4>Project Variations</h4>
                           <div className="enhancement-list">
                             {enhancements.variations.map((variation, idx) => (
                               <div key={idx} className="enhancement-item">
                                 <i className="bi bi-lightbulb"></i>
-                                <span>{variation}</span>
+                                <span className="enhancement-label">{variation}</span>
                               </div>
                             ))}
                           </div>
@@ -633,13 +883,13 @@ function IdeaGenerator() {
 
                         {/* Features */}
                         <div className="enhancement-card">
-                          <div className="enhancement-icon">⭐</div>
+                          <div className="enhancement-icon"><i className="bi bi-star"></i></div>
                           <h4>Recommended Features</h4>
                           <div className="enhancement-list">
                             {enhancements.features.map((feature, idx) => (
                               <div key={idx} className="enhancement-item">
                                 <i className="bi bi-check-circle"></i>
-                                <span>{feature}</span>
+                                <span className="enhancement-label">{feature}</span>
                               </div>
                             ))}
                           </div>
@@ -647,7 +897,7 @@ function IdeaGenerator() {
 
                         {/* Tech Stack */}
                         <div className="enhancement-card">
-                          <div className="enhancement-icon">💻</div>
+                          <div className="enhancement-icon"><i className="bi bi-laptop"></i></div>
                           <h4>Tech Stack</h4>
                           <div className="tech-stack">
                             <div className="tech-category">
@@ -679,13 +929,13 @@ function IdeaGenerator() {
 
                         {/* Improvements */}
                         <div className="enhancement-card">
-                          <div className="enhancement-icon">📈</div>
+                          <div className="enhancement-icon"><i className="bi bi-graph-up"></i></div>
                           <h4>Potential Improvements</h4>
                           <div className="enhancement-list">
                             {enhancements.improvements.map((improvement, idx) => (
                               <div key={idx} className="enhancement-item">
                                 <i className="bi bi-arrow-up-right"></i>
-                                <span>{improvement}</span>
+                                <span className="enhancement-label">{improvement}</span>
                               </div>
                             ))}
                           </div>
@@ -693,14 +943,14 @@ function IdeaGenerator() {
 
                         {/* Timeline */}
                         <div className="enhancement-card">
-                          <div className="enhancement-icon">⏰</div>
+                          <div className="enhancement-icon"><i className="bi bi-clock"></i></div>
                           <h4>Development Timeline</h4>
                           <div className="timeline">
                             {enhancements.timeline.map((phase, idx) => (
                               <div key={idx} className="timeline-phase">
                                 <div className="phase-number">{idx + 1}</div>
                                 <div className="phase-content">
-                                  <span>{phase}</span>
+                                  <span className="enhancement-label">{phase}</span>
                                 </div>
                               </div>
                             ))}
@@ -713,12 +963,12 @@ function IdeaGenerator() {
               </>
 
             ) : (
-              <div className="placeholder-enhanced">
+              <div className="placeholder">
                 <div className="placeholder-icon">
-                  <i className="bi bi-gem"></i>
+                  <i className="bi bi-lightbulb"></i>
                 </div>
                 <h2>Your Capstone Idea Awaits</h2>
-                <p>Configure your filters and click "Generate IdeaStone" to discover your next amazing project</p>
+                <p>Configure your filters and click "Generate Idea" to discover your next amazing project</p>
                 <div className="placeholder-tips">
                   <div className="tip">
                     <i className="bi bi-lightbulb"></i>
@@ -733,18 +983,47 @@ function IdeaGenerator() {
             )}
           </div>
         </div>
-
-        {history.length > 0 && (
-          <div className="history-section-enhanced">
-            <div className="history-header">
-
-              <h3>Recent IdeaStones</h3>
+        {/* Recent Ideas Section */}
+        <div className="history-section">
+          <div className="history-header">
+            <h3>Recent Ideas</h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              {history.length > 0 && (
+                <button
+                  className="clear-history-btn"
+                  onClick={clearHistory}
+                  style={{
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    color: 'var(--danger)',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    padding: '4px 8px',
+                    borderRadius: '6px',
+                    fontSize: '0.7rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <i className="bi bi-trash"></i> Clear
+                </button>
+              )}
               <span className="history-count">{history.length}</span>
             </div>
+          </div>
+
+          {history.length === 0 ? (
+            <div className="no-history" style={{
+              textAlign: 'center',
+              padding: '20px',
+              color: 'var(--text-muted)',
+              fontSize: '0.9rem'
+            }}>
+              <i className="bi bi-hourglass-split" style={{ fontSize: '1.5rem', marginBottom: '10px', opacity: 0.5 }}></i>
+              <p>Your recent ideas will appear here</p>
+            </div>
+          ) : (
             <div className="history-grid">
               {history.map((idea, idx) => (
                 <div
-                  key={idx}
+                  key={`${idea.id}-${idx}`}
                   className="history-card"
                   onClick={() => setSelectedIdea(idea)}
                 >
@@ -762,26 +1041,91 @@ function IdeaGenerator() {
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
+
       </div>
+
+      {/* Saved Ideas Button */}
+      <button
+        className="saved-ideas-btn"
+        onClick={() => setShowSavedIdeas(!showSavedIdeas)}
+      >
+        <i className="bi bi-collection"></i>
+        <span>Saved Ideas ({savedIdeas.length})</span>
+      </button>
+      {/* Saved Ideas Section */}
+      {showSavedIdeas && (
+        <div className="saved-ideas-section">
+          <div className="saved-ideas-header">
+            <h2>Your Saved Ideas</h2>
+            <button
+              className="close-saved-ideas"
+              onClick={() => setShowSavedIdeas(false)}
+            >
+              <i className="bi bi-x"></i>
+            </button>
+          </div>
+
+          {savedIdeas.length === 0 ? (
+            <div className="no-saved-ideas">
+              <i className="bi bi-bookmark"></i>
+              <h3>No saved ideas yet</h3>
+              <p>Save ideas you like by clicking the "Save" button when viewing an idea</p>
+            </div>
+          ) : (
+            <div className="saved-ideas-grid">
+              {savedIdeas.map((savedIdea, index) => (
+                <div key={index} className="saved-idea-card">
+                  <div className="saved-idea-content">
+                    <h4>{savedIdea.title}</h4>
+                    <div className="saved-idea-meta">
+                      <span className="saved-industry">{savedIdea.industry}</span>
+                      <span className="saved-type">{savedIdea.type}</span>
+                      <span className={`saved-difficulty ${savedIdea.difficulty?.toLowerCase()}`}>
+                        {savedIdea.difficulty}
+                      </span>
+                    </div>
+                    <div className="saved-idea-actions">
+                      <button
+                        className="load-saved-idea"
+                        onClick={() => loadSavedIdea(savedIdea)}
+                      >
+                        <i className="bi bi-eye"></i>
+                        View
+                      </button>
+                      <button
+                        className="remove-saved-idea"
+                        onClick={() => removeSavedIdea(savedIdea)}
+                      >
+                        <i className="bi bi-trash"></i>
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Stats Footer */}
       <footer className="app-footer">
         <div className="stats">
           <div className="stat">
             <span className="stat-number">{ideas.length}</span>
-            <span className="stat-label">Total Ideas</span>
+            <span className="stat-label">Total_Ideas</span>
           </div>
           <div className="stat">
-            <span className="stat-number">{history.length}</span>
-            <span className="stat-label">Generated</span>
+            <span className="stat-number">{generationCount}</span>
+            <span className="stat-label">Generated_Today</span>
           </div>
           <div className="stat">
             <span className="stat-number">
-              {filters.industry || filters.type || filters.difficulty || filters.duration ? 'Custom' : 'All'}
+              {hasNoPlan ? 'No Plan' : currentPlan?.type === 'free' ? 'Free' : currentPlan?.type === 'starter' ? 'Starter' : currentPlan?.type === 'pro' ? 'Pro' : currentPlan?.type === 'unlimited' ? 'Unlimited' : 'Premium'}
             </span>
-            <span className="stat-label">Filter</span>
+            <span className="stat-label">Plan</span>
           </div>
         </div>
       </footer>

@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
+import { useSubscription, SUBSCRIPTION_PLANS } from './Context/SubscriptionContext';
+import SubscriptionModal from './Components/SubscriptionModal';
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom';
 import TextType from './Components/TextType.jsx';
@@ -17,6 +19,32 @@ const HomePage = () => {
   const [loading, setLoading] = useState(false)
   const [isContactOpen, setIsContactOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSubscriptionOpen, setIsSubscriptionOpen] = useState(false);
+
+  const {
+    getRemainingGenerations,
+    isSubscribed,
+    generationCount,
+    currentPlan,
+    isFreePlan,
+    canGenerate,
+    canGenerateNow,
+    remainingGenerations,
+    hasNoPlan, 
+    subscribe 
+  } = useSubscription();
+
+  useEffect(() => {
+    console.log('HomePage Subscription State:', {
+      hasNoPlan,
+      isSubscribed,
+      currentPlan: currentPlan?.name,
+      isFreePlan,
+      generationCount,
+      remaining: getRemainingGenerations(),
+      canGenerate: canGenerateNow
+    });
+  }, [hasNoPlan, isSubscribed, currentPlan, isFreePlan, generationCount, getRemainingGenerations, canGenerateNow]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -34,13 +62,96 @@ const HomePage = () => {
     }
     return () => observer.disconnect();
   }, []);
+
   if (loading) {
     return <Loader />;
   }
+
+  const handleSubscribe = () => {
+    setIsSubscriptionOpen(true);
+  };
+
+  // NEW: Function to activate free plan
+  const handleActivateFreePlan = () => {
+    subscribe(SUBSCRIPTION_PLANS.FREE);
+  };
+
   const handleGetStarted = () => {
-    setLoading(true)
-    setTimeout(() => navigate('./Generator'), 800)
-  }
+    // If user has no plan, prompt them to activate free plan
+    if (hasNoPlan) {
+      setIsSubscriptionOpen(true);
+      return;
+    }
+
+    // Check if user can generate ideas
+    if (!canGenerateNow) {
+      setIsSubscriptionOpen(true);
+      return;
+    }
+
+    setLoading(true);
+    setTimeout(() => navigate('./Generator'), 800);
+  };
+
+  // Get plan display name for badge
+  const getPlanDisplayName = () => {
+    if (hasNoPlan) return 'No Plan';
+    if (currentPlan?.type === 'free') return 'Free';
+    if (currentPlan?.type === 'starter') return 'Starter';
+    if (currentPlan?.type === 'pro') return 'Pro';
+    if (currentPlan?.type === 'unlimited') return 'Unlimited';
+    return 'Premium';
+  };
+
+  // Get button text based on subscription state
+  const getSubscribeButtonText = () => {
+    if (hasNoPlan) return 'Get Free Plan';
+    if (!isSubscribed) return 'Upgrade Now';
+    if (currentPlan?.type === 'unlimited') return 'Manage Plan';
+    return 'Upgrade Plan';
+  };
+
+  // Get subtitle text based on subscription state
+  const getSubtitleText = () => {
+    if (hasNoPlan) {
+      return "Activate your free plan to get 10 idea generations!";
+    }
+
+    if (currentPlan?.type === 'unlimited') {
+      return "Start your capstone with Levi's IdeaStone.";
+    }
+
+    const remaining = getRemainingGenerations();
+    if (currentPlan?.type === 'free') {
+      return `Start your capstone with Levi's IdeaStone.`;
+    }
+
+    return `Start your capstone with Levi's IdeaStone.`;
+  };
+
+  // Get main button text and state
+  const getMainButtonState = () => {
+
+
+    if (!canGenerateNow) {
+      return {
+        text: 'No Generations Left',
+        disabled: true,
+        icon: 'bi-lock',
+        variant: 'disabled'
+      };
+    }
+
+    return {
+      text: 'Get Started',
+      disabled: false,
+      icon: 'bi-lightning',
+      variant: 'primary'
+    };
+  };
+
+  const mainButtonState = getMainButtonState();
+
   return (
     <div>
       <motion.div
@@ -55,6 +166,35 @@ const HomePage = () => {
             <OrbBackground />
             <nav className="homepage-nav">
               <div className="nav-left">IdeaStone <i className="bi bi-strava"></i></div>
+
+
+              <div className="subscription-status">
+                {hasNoPlan ? (
+                  <span className="no-plan-badge">
+                    No Plan Activated
+                  </span>
+                ) : isSubscribed ? (
+                  <span className={`premium-badge ${currentPlan?.type}`}>
+                    <i className="bi bi-star-fill"></i>
+                    {getPlanDisplayName()}
+                    {currentPlan?.type !== 'unlimited' && currentPlan?.type !== 'free' && (
+                      <span className="plan-count">
+                        {getRemainingGenerations()}
+                      </span>
+                    )}
+                    {currentPlan?.type === 'free' && (
+                      <span className="plan-count">
+                        {getRemainingGenerations()}
+                      </span>
+                    )}
+                  </span>
+                ) : (
+                  <span className="free-badge">
+                    <i className="bi bi-arrow-repeat"></i>
+                    {getRemainingGenerations()} gens left
+                  </span>
+                )}
+              </div>
 
               <div className="hamburger-wrapper">
                 <div className="hamburger">
@@ -93,26 +233,75 @@ const HomePage = () => {
                 </h1>
 
                 <p className="homepage-subtext">
-                  Start your capstone with Levi's IdeaStone.
+                  {getSubtitleText()}
                 </p>
+
               </header>
 
               <div className="homepage-button-group">
-                <button onClick={handleGetStarted} className="homepage-button" >
-                  Get Started
-                </button>
                 <button
-                  onClick={() => navigate('')}
-                  className="homepage-button">
-                  Subscribe
+                  onClick={hasNoPlan ? handleActivateFreePlan : handleGetStarted}
+                  className={`homepage-button ${mainButtonState.variant}`}
+                  disabled={mainButtonState.disabled}
+                >
+                  <i className={`bi ${mainButtonState.icon}`}></i>
+                  &nbsp; {mainButtonState.text}
+                </button>
+
+                <button
+                  onClick={handleSubscribe}
+                  className={`homepage-button ${hasNoPlan ? 'free' : isSubscribed ? 'manage' : 'upgrade'}`}>
+                  {hasNoPlan ? (
+                    <>
+                      <i className="bi bi-rocket-takeoff"></i>
+                      &nbsp; View All Plans
+                    </>
+                  ) : isSubscribed ? (
+                    <>
+                      <i className="bi bi-gear"></i>
+                      &nbsp; {getSubscribeButtonText()}
+                    </>
+                  ) : (
+                    <>
+                      <i className="bi bi-rocket-takeoff"></i>
+                      &nbsp; {getSubscribeButtonText()}
+                    </>
+                  )}
                 </button>
               </div>
+
+              {/* Quick Plan Info */}
+              {!hasNoPlan && isSubscribed && currentPlan && (
+                <motion.div
+                  className="current-plan-info"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.7 }}
+                >
+                  <div className="plan-details">
+                    <span className="plan-name">{currentPlan.name}</span>
+                    <span className="plan-feature-count">
+                      {currentPlan.features.length} features included
+                    </span>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Free Plan Activation Info */}
+              {hasNoPlan && (
+                <motion.div
+                  className="free-plan-activation-info"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.7 }}
+                >
+
+                </motion.div>
+              )}
             </div>
           </div>
         </div>
       </motion.div>
-
-      {/* University Partnership Section */}
       <section className="university-section">
         <div className="university-container">
           <motion.div
@@ -153,7 +342,6 @@ const HomePage = () => {
                 transition={{ delay: 0.5, duration: 0.8 }}
               >
                 <div className="university-logo">
-
                   <div className="logo-image-container">
                     <img
                       src="src/assets/tmc_logo.png"
@@ -213,8 +401,14 @@ const HomePage = () => {
         </div>
       </section>
 
+      <SubscriptionModal
+        isOpen={isSubscriptionOpen}
+        onClose={() => setIsSubscriptionOpen(false)}
+      />
+
       <Admin />
 
+      {/* Rest of your existing sections remain the same */}
       <section className="chat-area-section">
         <div className="chat-area-container">
           <motion.div
@@ -238,7 +432,6 @@ const HomePage = () => {
               whileInView={{ opacity: 1 }}
               transition={{ delay: 0.3, duration: 0.6 }}
             >
-
               <div className="chat-header">
                 <motion.h2
                   className="chat-title"
@@ -320,6 +513,7 @@ const HomePage = () => {
           </motion.div>
         </div>
       </section>
+
       <ContactForm
         isOpen={isContactOpen}
         onClose={() => setIsContactOpen(false)}
@@ -394,7 +588,6 @@ const HomePage = () => {
                     </div>
                   </div>
 
-
                   <div className="logo-item">
                     <div className="logo-wrapper">
                       <img src="src/assets/tmc_logo.png" alt="Trinidad Municipal College" className="logo-loop-image" />
@@ -446,6 +639,21 @@ const HomePage = () => {
           </motion.div>
         </div>
       </section>
+
+      {process.env.NODE_ENV === 'development' && (
+        <button
+          onClick={() => {
+            localStorage.removeItem('ideastone_subscription_v3');
+            localStorage.removeItem('ideastone_generation_count_v3');
+            localStorage.removeItem('ideastone_subscription_v2');
+            localStorage.removeItem('ideastone_generation_count_v2');
+            window.location.reload();
+          }}
+          className="reset-subs-btn"
+        >
+          Reset All Subs
+        </button>
+      )}
     </div>
   );
 };

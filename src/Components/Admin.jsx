@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from 'framer-motion';
 import profilePicture from "C:/xampp/htdocs/ideastone/src/assets/IMG_20240106_195144_425.jpg";
-import "C:/xampp/htdocs/ideastone/src/Style/HomePage.css";
+import "../../src/Style/Admin.css";
 
 function Admin() {
   const containerRef = useRef(null);

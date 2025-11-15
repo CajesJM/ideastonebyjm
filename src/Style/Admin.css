@@ -1,0 +1,444 @@
+.admin-section {
+  position: relative;
+  padding: 80px 20px 60px;
+  background: transparent;
+  color: #fff;
+  overflow: hidden;
+  min-height: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.admin-background-elements {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.admin-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(50px);
+  opacity: 0.15;
+  animation: adminOrbFloat 15s ease-in-out infinite;
+}
+
+.admin-orb-1 {
+  width: 250px;
+  height: 250px;
+  background: linear-gradient(135deg, #a70bfb 0%, #4da6ff 100%);
+  top: 10%;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.admin-orb-2 {
+  width: 200px;
+  height: 200px;
+  background: linear-gradient(135deg, #4dff88 0%, #4cc9f0 100%);
+  top: 60%;
+  right: 10%;
+  animation-delay: -5s;
+}
+
+.admin-orb-3 {
+  width: 220px;
+  height: 220px;
+  background: linear-gradient(135deg, #f72585 0%, #7b61ff 100%);
+  bottom: 20%;
+  left: 60%;
+  animation-delay: -10s;
+}
+
+@keyframes adminOrbFloat {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    transform: translateY(-25px) scale(1.08);
+  }
+}
+
+.admin-heading {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  margin: 0 0 15px;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight: 700;
+  background: linear-gradient(135deg, #ffffff 0%, #a70bfb 50%, #4cc9f0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 4px 20px rgba(167, 11, 251, 0.3);
+}
+
+.admin-subtitle {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 40px;
+  max-width: 500px;
+  line-height: 1.5;
+  font-weight: 300;
+}
+
+.admin-grid {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 25px;
+  justify-items: center;
+  align-items: start;
+  max-width: 1200px;
+  margin: 0 auto 50px;
+  padding: 10px;
+  width: 100%;
+}
+
+@media (min-width: 1200px) {
+  .admin-grid {
+    grid-template-columns: repeat(3, minmax(270px, 1fr));
+  }
+}
+
+.admin-card {
+  position: relative;
+  width: 100%;
+  max-width: 280px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 25px 20px;
+  text-align: center;
+  color: #fff;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  cursor: pointer;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+.glass-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0.1) 100%
+  );
+  opacity: 0.6;
+  border-radius: 20px;
+  pointer-events: none;
+}
+
+.card-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: linear-gradient(135deg, 
+    rgba(123, 97, 255, 0.1) 0%, 
+    rgba(76, 201, 240, 0.05) 50%,
+    rgba(167, 11, 251, 0.08) 100%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  border-radius: 20px;
+}
+
+.admin-card::before {
+  content: '';
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  right: 1px;
+  bottom: 1px;
+  border-radius: 19px;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.2) 0%, 
+    transparent 30%,
+    transparent 70%,
+    rgba(255, 255, 255, 0.1) 100%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.admin-card:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 
+    0 20px 40px rgba(123, 97, 255, 0.15),
+    0 8px 32px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+.admin-card:hover .card-glow,
+.admin-card:hover::before {
+  opacity: 1;
+}
+
+.admin-avatar-container {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-border-glow {
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #a70bfb, #4da6ff, #4cc9f0);
+  animation: gradientRotate 4s linear infinite;
+  z-index: 1;
+  opacity: 0.7;
+  filter: blur(1px);
+}
+
+@keyframes gradientRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.admin-profile {
+  width: 106px;
+  height: 106px;
+  object-fit: cover;
+  border-radius: 50%;
+  position: relative;
+  z-index: 2;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.4s ease;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.admin-card:hover .admin-profile {
+  transform: scale(1.08);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 8px 25px rgba(123, 97, 255, 0.3);
+}
+
+.avatar-shine {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.4), 
+    transparent);
+  transform: skewX(-25deg);
+  transition: left 0.8s ease;
+  z-index: 3;
+  border-radius: 50%;
+}
+
+.admin-card:hover .avatar-shine {
+  left: 150%;
+}
+
+.admin-card-content {
+  position: relative;
+  z-index: 2;
+}
+
+.admin-name {
+  margin: 0 0 8px;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #ffffff 0%, #a70bfb 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 2px 10px rgba(167, 11, 251, 0.2);
+}
+
+.admin-role {
+  margin: 0 0 15px;
+  font-size: 0.95rem;
+  color: #4cc9f0;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.admin-details {
+  margin: 0 0 18px;
+}
+
+.admin-age {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 6px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+}
+
+.tech-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tech-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4dff88, #4cc9f0);
+  animation: techPulse 2s ease-in-out infinite;
+  box-shadow: 0 0 10px rgba(77, 255, 136, 0.5);
+}
+
+@keyframes techPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 10px rgba(77, 255, 136, 0.5);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.3);
+    box-shadow: 0 0 15px rgba(77, 255, 136, 0.8);
+  }
+}
+
+.team-stats {
+  display: flex;
+  gap: 40px;
+  justify-content: center;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 2;
+}
+
+.stat-item {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  padding: 20px 25px;
+  min-width: 120px;
+  transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-3px);
+}
+
+.stat-number {
+  font-size: 2.2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #a70bfb, #4cc9f0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 5px;
+  text-shadow: 0 4px 20px rgba(167, 11, 251, 0.3);
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 400;
+}
+
+@media (max-width: 768px) {
+  .admin-section {
+    padding: 60px 15px 40px;
+  }
+
+  .admin-grid {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+  }
+
+  .admin-card {
+    max-width: 260px;
+    padding: 22px 18px;
+  }
+
+  .admin-avatar-container {
+    width: 100px;
+    height: 100px;
+  }
+
+  .admin-profile {
+    width: 96px;
+    height: 96px;
+  }
+
+  .team-stats {
+    gap: 20px;
+  }
+
+  .stat-item {
+    padding: 15px 20px;
+    min-width: 100px;
+  }
+
+  .stat-number {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-card {
+    max-width: 100%;
+  }
+
+  .team-stats {
+    gap: 15px;
+  }
+
+  .stat-item {
+    flex: 1;
+    min-width: 90px;
+    padding: 12px 15px;
+  }
+}

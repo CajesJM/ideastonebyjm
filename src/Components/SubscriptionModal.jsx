@@ -112,10 +112,8 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
 
   const handleSubscribe = (plan, paymentMethod = null) => {
     if (plan.type === 'free') {
-      // Free plan - no payment needed
       subscribe(plan);
       
-      // Show success message
       setTimeout(() => {
         alert(`🎉 Successfully activated Free Plan! You now have 10 free generations.`);
         onClose();
@@ -128,10 +126,8 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
       return;
     }
 
-    // Show payment processing state
     alert(`Processing ${plan.name} payment via ${paymentMethod}...`);
-    
-    // Simulate payment processing
+
     setTimeout(() => {
       subscribe(plan);
       alert(`🎉 Successfully subscribed to ${plan.name}! You now have ${plan.limit} generations per month.`);
@@ -158,7 +154,6 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
     );
   };
 
-  // Check if user needs to activate free plan
   const needsFreeActivation = !isSubscribed && (!currentPlan || currentPlan.type !== 'free');
 
   return (
@@ -193,7 +188,6 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
               </button>
             </div>
 
-            {/* Activation Required Banner */}
             {needsFreeActivation && (
               <div className="activation-banner">
                 <div className="banner-content">
@@ -206,7 +200,6 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
               </div>
             )}
 
-            {/* Current Plan Status */}
             {isSubscribed && (
               <div className="current-plan-section">
                 <div className="current-plan-badge">
@@ -220,7 +213,6 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
               </div>
             )}
 
-            {/* Plans Grid */}
             <div className="plans-container">
               {subscriptionPlans.map((plan, index) => (
                 <motion.div
@@ -231,7 +223,7 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
                   transition={{ delay: index * 0.15, type: "spring", stiffness: 300 }}
                   whileHover={{ y: -5, transition: { duration: 0.2 } }}
                 >
-                  {/* Free Plan Badge */}
+           
                   {plan.isFree && (
                     <div className="free-badge">
                       <i className="bi bi-gift"></i>
@@ -239,7 +231,6 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
                     </div>
                   )}
 
-                  {/* Popular Badge */}
                   {plan.popular && (
                     <div className="popular-badge">
                       <i className="bi bi-star-fill"></i>
@@ -247,7 +238,6 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
                     </div>
                   )}
 
-                  {/* Plan Header */}
                   <div className="plan-header">
                     <div className="plan-type">
                       <h3>{plan.name}</h3>
@@ -272,7 +262,6 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
                     </div>
                   </div>
 
-                  {/* Features List */}
                   <ul className="plan-features">
                     {plan.features.map((feature, i) => (
                       <motion.li 
@@ -287,7 +276,6 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
                     ))}
                   </ul>
 
-                  {/* Payment Section for Paid Plans */}
                   {!plan.isFree && (
                     <div className="payment-section">
                       <h4>Choose Payment Method</h4>
@@ -311,7 +299,6 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
                     </div>
                   )}
 
-                  {/* CTA Button */}
                   <motion.button
                     className={`subscribe-btn ${plan.popular ? 'popular' : ''} ${plan.isFree ? 'free' : ''}`}
                     whileHover={{ scale: 1.02 }}
@@ -337,7 +324,6 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
                     )}
                   </motion.button>
 
-                  {/* No Payment Needed for Free Plan */}
                   {plan.isFree && (
                     <div className="no-payment-needed">
                       <i className="bi bi-shield-check"></i>
@@ -348,7 +334,6 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
               ))}
             </div>
 
-            {/* Guarantee Section */}
             <div className="guarantee-section">
               <div className="guarantee-grid">
                 <div className="guarantee-item">
@@ -366,7 +351,6 @@ const SubscriptionModal = ({ isOpen, onClose }) => {
               </div>
             </div>
 
-            {/* Footer */}
             <div className="modal-footer">
               <p>
                 <i className="bi bi-info-circle"></i>

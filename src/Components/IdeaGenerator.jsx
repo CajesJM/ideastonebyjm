@@ -137,7 +137,7 @@ function IdeaGenerator() {
         const index = Math.floor(Math.random() * filteredIdeas.length);
         const newIdea = filteredIdeas[index];
 
-        const updatedHistory = [newIdea, ...history.slice(0, 7)]; // Keep max 8 items
+        const updatedHistory = [newIdea, ...history.slice(0, 7)];
         setHistory(updatedHistory);
         localStorage.setItem('ideastone_recent_ideas', JSON.stringify(updatedHistory));
 
@@ -175,7 +175,6 @@ function IdeaGenerator() {
     }
   };
 
-  // Save Idea Functionality
   const saveIdea = () => {
     if (!selectedIdea) return;
 
@@ -214,7 +213,6 @@ function IdeaGenerator() {
     showSimpleToast('Idea removed from saved ideas!');
   };
 
-  // Load saved idea
   const loadSavedIdea = (savedIdea) => {
     setSelectedIdea(savedIdea);
     setShowSavedIdeas(false);
@@ -245,7 +243,6 @@ function IdeaGenerator() {
     }
   };
 
-  // Fallback share method for desktop
   const fallbackShare = (shareText) => {
     navigator.clipboard.writeText(shareText).then(() => {
       showSimpleToast('Idea details copied to clipboard! Share it with your friends.');
@@ -308,12 +305,10 @@ function IdeaGenerator() {
     (!filters.search || idea.title.toLowerCase().includes(filters.search.toLowerCase()))
   ).length > 0;
 
-  // Check if current idea is already saved
   const isIdeaSaved = selectedIdea && savedIdeas.some(idea =>
     idea.id === selectedIdea.id || idea.title === selectedIdea.title
   );
 
-  // AI Enhancement Functions
   const generateVariations = (idea) => {
     const baseVariations = [
       `Mobile App: ${idea.title}`,
@@ -401,8 +396,6 @@ function IdeaGenerator() {
       return;
     }
     setIsEnhancing(true);
-
-    // Simulate AI processing time
     await new Promise(resolve => setTimeout(resolve, 1500));
 
     const enhancedIdea = {
@@ -436,7 +429,6 @@ function IdeaGenerator() {
     showSimpleToast('Enhancements cleared');
   };
 
-  // Get plan display name for badge
   const getPlanDisplayName = () => {
     if (hasNoPlan) return 'No Plan';
     if (currentPlan?.type === 'free') return 'Free';

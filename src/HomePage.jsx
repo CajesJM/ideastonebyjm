@@ -20,6 +20,8 @@ const HomePage = () => {
   const [isContactOpen, setIsContactOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSubscriptionOpen, setIsSubscriptionOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isAtUniversitySection, setIsAtUniversitySection] = useState(false);
 
   const {
     getRemainingGenerations,
@@ -30,8 +32,8 @@ const HomePage = () => {
     canGenerate,
     canGenerateNow,
     remainingGenerations,
-    hasNoPlan, 
-    subscribe 
+    hasNoPlan,
+    subscribe
   } = useSubscription();
 
   useEffect(() => {
@@ -63,6 +65,18 @@ const HomePage = () => {
     return () => observer.disconnect();
   }, []);
 
+ useEffect(() => {
+  const handleScroll = () => {
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+    setIsScrolled(scrollTop > 100);
+    setIsAtUniversitySection(scrollTop > 950);
+  };
+
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  return () => window.removeEventListener('scroll', handleScroll);
+}, []);
+
   if (loading) {
     return <Loader />;
   }
@@ -71,19 +85,15 @@ const HomePage = () => {
     setIsSubscriptionOpen(true);
   };
 
-  // NEW: Function to activate free plan
   const handleActivateFreePlan = () => {
     subscribe(SUBSCRIPTION_PLANS.FREE);
   };
 
   const handleGetStarted = () => {
-    // If user has no plan, prompt them to activate free plan
     if (hasNoPlan) {
       setIsSubscriptionOpen(true);
       return;
     }
-
-    // Check if user can generate ideas
     if (!canGenerateNow) {
       setIsSubscriptionOpen(true);
       return;
@@ -93,7 +103,6 @@ const HomePage = () => {
     setTimeout(() => navigate('./Generator'), 800);
   };
 
-  // Get plan display name for badge
   const getPlanDisplayName = () => {
     if (hasNoPlan) return 'No Plan';
     if (currentPlan?.type === 'free') return 'Free';
@@ -103,7 +112,6 @@ const HomePage = () => {
     return 'Premium';
   };
 
-  // Get button text based on subscription state
   const getSubscribeButtonText = () => {
     if (hasNoPlan) return 'Get Free Plan';
     if (!isSubscribed) return 'Upgrade Now';
@@ -111,7 +119,6 @@ const HomePage = () => {
     return 'Upgrade Plan';
   };
 
-  // Get subtitle text based on subscription state
   const getSubtitleText = () => {
     if (hasNoPlan) {
       return "Activate your free plan to get 10 idea generations!";
@@ -129,10 +136,7 @@ const HomePage = () => {
     return `Start your capstone with Levi's IdeaStone.`;
   };
 
-  // Get main button text and state
   const getMainButtonState = () => {
-
-
     if (!canGenerateNow) {
       return {
         text: 'No Generations Left',
@@ -161,12 +165,13 @@ const HomePage = () => {
         className="homepage"
       >
         <div className='bg'>
+
           <AuroraShader />
+
           <div className="homepage-container">
             <OrbBackground />
-            <nav className="homepage-nav">
+            <nav className={`homepage-nav ${isAtUniversitySection ? 'nav-hidden' : ''}`}>
               <div className="nav-left">IdeaStone <i className="bi bi-strava"></i></div>
-
 
               <div className="subscription-status">
                 {hasNoPlan ? (
@@ -210,6 +215,7 @@ const HomePage = () => {
                 </div>
               </div>
             </nav>
+
 
             <div className="homepage-overlay">
               <header className="homepage-header">
@@ -408,111 +414,6 @@ const HomePage = () => {
 
       <Admin />
 
-      {/* Rest of your existing sections remain the same */}
-      <section className="chat-area-section">
-        <div className="chat-area-container">
-          <motion.div
-            className="chat-area-card"
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.8,
-              ease: "easeOut"
-            }}
-            viewport={{ once: true }}
-          >
-            <div className="chat-background-elements">
-              <div className="floating-orb orb-1"></div>
-              <div className="floating-orb orb-2"></div>
-              <div className="floating-orb orb-3"></div>
-            </div>
-            <motion.div
-              className="chat-content-wrapper"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ delay: 0.3, duration: 0.6 }}
-            >
-              <div className="chat-header">
-                <motion.h2
-                  className="chat-title"
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5, duration: 0.6 }}
-                >
-                  Need Capstone Help? Let's Chat!
-                </motion.h2>
-              </div>
-
-              <motion.p
-                className="chat-description"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6, duration: 0.6 }}
-              >
-                Ready to bring your capstone project to life? Whether you need technical guidance,
-                want to brainstorm ideas, or just have questions about your project - I'm here to help!
-                Let's build something amazing together. Click the button below to start a conversation.
-              </motion.p>
-
-              <motion.div
-                className="features-grid"
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                transition={{ delay: 0.7, duration: 0.6 }}
-              >
-                <div className="feature-card">
-                  <div className="feature-icon">
-                    <i className="bi bi-lightning-charge"></i>
-                  </div>
-                  <h4>Quick Response</h4>
-                  <p>Get answers within hours</p>
-                </div>
-
-                <div className="feature-card">
-                  <div className="feature-icon">
-                    <i className="bi bi-code-square"></i>
-                  </div>
-                  <h4>Technical Support</h4>
-                  <p>Expert development guidance</p>
-                </div>
-
-                <div className="feature-card">
-                  <div className="feature-icon">
-                    <i className="bi bi-lightbulb"></i>
-                  </div>
-                  <h4>Personal Support</h4>
-                  <p>One-on-one help from IdeaStone Developer's</p>
-                </div>
-              </motion.div>
-
-              <motion.div
-                className="chat-cta"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.9, duration: 0.6 }}
-              >
-                <motion.button
-                  className="chat-action-btn"
-                  onClick={() => setIsContactOpen(true)}
-                  whileHover={{
-                    scale: 1.05,
-                    boxShadow: "0 10px 30px rgba(76, 201, 240, 0.4)"
-                  }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <i className="bi bi-send-arrow-up"></i>
-                  Start Conversation
-                  <div className="btn-shine"></div>
-                </motion.button>
-
-                <p className="cta-subtext">
-                  Have questions before reaching out? Check our <a href="/docs">Portfolio</a> for more info.
-                </p>
-              </motion.div>
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
 
       <ContactForm
         isOpen={isContactOpen}
@@ -641,7 +542,7 @@ const HomePage = () => {
       </section>
 
       {process.env.NODE_ENV === 'development' && (
-        <button
+        <motion.button
           onClick={() => {
             localStorage.removeItem('ideastone_subscription_v3');
             localStorage.removeItem('ideastone_generation_count_v3');
@@ -649,10 +550,16 @@ const HomePage = () => {
             localStorage.removeItem('ideastone_generation_count_v2');
             window.location.reload();
           }}
-          className="reset-subs-btn"
+          className={`reset-subs-btn ${isScrolled ? 'hidden' : ''}`}
+          initial={{ opacity: 1, y: 0 }}
+          animate={{
+            opacity: isScrolled ? 0 : 1,
+            y: isScrolled ? 20 : 0
+          }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
         >
           Reset All Subs
-        </button>
+        </motion.button>
       )}
     </div>
   );

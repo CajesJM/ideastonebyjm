@@ -9,10 +9,11 @@ import OrbBackground from './Components/OrbBackground.jsx';
 import Admin from "./Components/Admin.jsx";
 import ContactForm from "./Components/ContactForm.jsx";
 import AuroraShader from './Background/AuroraShader.tsx';
-import Loader from './Components/Loader.jsx'
+import Loader from './Components/Loader.jsx';
+import Login from './Components/Login.jsx';
 import './Style/HomePage.css';
 
-const HomePage = () => {
+const HomePage = ({ auth }) => {
   const navigate = useNavigate();
   const headingRef = useRef(null);
   const [headingVisible, setHeadingVisible] = useState(false);
@@ -22,6 +23,9 @@ const HomePage = () => {
   const [isSubscriptionOpen, setIsSubscriptionOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isAtUniversitySection, setIsAtUniversitySection] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+
+  const { user, login, logout, createDemoUser, isAuthenticated, isLoading: authLoading } = auth;
 
   const {
     getRemainingGenerations,
@@ -44,9 +48,11 @@ const HomePage = () => {
       isFreePlan,
       generationCount,
       remaining: getRemainingGenerations(),
-      canGenerate: canGenerateNow
+      canGenerate: canGenerateNow,
+      isAuthenticated,
+      user: user?.email
     });
-  }, [hasNoPlan, isSubscribed, currentPlan, isFreePlan, generationCount, getRemainingGenerations, canGenerateNow]);
+  }, [hasNoPlan, isSubscribed, currentPlan, isFreePlan, generationCount, getRemainingGenerations, canGenerateNow, isAuthenticated, user]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -65,17 +71,17 @@ const HomePage = () => {
     return () => observer.disconnect();
   }, []);
 
- useEffect(() => {
-  const handleScroll = () => {
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-    setIsScrolled(scrollTop > 100);
-    setIsAtUniversitySection(scrollTop > 950);
-  };
+      setIsScrolled(scrollTop > 100);
+      setIsAtUniversitySection(scrollTop > 950);
+    };
 
-  window.addEventListener('scroll', handleScroll, { passive: true });
-  return () => window.removeEventListener('scroll', handleScroll);
-}, []);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   if (loading) {
     return <Loader />;
@@ -90,6 +96,15 @@ const HomePage = () => {
   };
 
   const handleGetStarted = () => {
+
+    if (!isAuthenticated) {
+      const useDemo = confirm('🎭 Welcome to IdeaStone! Would you like to try demo mode first, or sign in to save your progress? \n\nClick OK for Demo Mode\nClick Cancel to stay in Guest Mode');
+      if (useDemo) {
+        createDemoUser();
+      }
+      return;
+    }
+
     if (hasNoPlan) {
       setIsSubscriptionOpen(true);
       return;
@@ -120,6 +135,10 @@ const HomePage = () => {
   };
 
   const getSubtitleText = () => {
+    if (!isAuthenticated) {
+      return "Try demo mode or sign in to start generating capstone ideas!";
+    }
+
     if (hasNoPlan) {
       return "Activate your free plan to get 10 idea generations!";
     }
@@ -137,6 +156,15 @@ const HomePage = () => {
   };
 
   const getMainButtonState = () => {
+    if (!isAuthenticated) {
+      return {
+        text: 'Try Demo Mode',
+        disabled: false,
+        icon: 'bi bi-symmetry-vertical',
+        variant: 'demo'
+      };
+    }
+
     if (!canGenerateNow) {
       return {
         text: 'No Generations Left',
@@ -149,7 +177,7 @@ const HomePage = () => {
     return {
       text: 'Get Started',
       disabled: false,
-      icon: 'bi-lightning',
+      icon: 'bi bi-play',
       variant: 'primary'
     };
   };
@@ -173,8 +201,15 @@ const HomePage = () => {
             <nav className={`homepage-nav ${isAtUniversitySection ? 'nav-hidden' : ''}`}>
               <div className="nav-left">IdeaStone <i className="bi bi-strava"></i></div>
 
+
+
               <div className="subscription-status">
-                {hasNoPlan ? (
+                {!isAuthenticated ? (
+                  <span className="guest-badge">
+                    <i className="bi bi-person"></i>
+                    &nbsp;Guest Mode
+                  </span>
+                ) : hasNoPlan ? (
                   <span className="no-plan-badge">
                     No Plan Activated
                   </span>
@@ -219,6 +254,17 @@ const HomePage = () => {
 
             <div className="homepage-overlay">
               <header className="homepage-header">
+                {/* Auth Welcome Message */}
+                {isAuthenticated && (
+                  <motion.div
+                    className="user-welcome-message"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    Welcome, {user.name}!
+                  </motion.div>
+                )}
+
                 <h1 className="homepage-animated-text">
                   <TextType
                     text={[
@@ -246,18 +292,33 @@ const HomePage = () => {
 
               <div className="homepage-button-group">
                 <button
-                  onClick={hasNoPlan ? handleActivateFreePlan : handleGetStarted}
+                  onClick={handleGetStarted}
                   className={`homepage-button ${mainButtonState.variant}`}
                   disabled={mainButtonState.disabled}
                 >
                   <i className={`bi ${mainButtonState.icon}`}></i>
                   &nbsp; {mainButtonState.text}
                 </button>
-
                 <button
-                  onClick={handleSubscribe}
-                  className={`homepage-button ${hasNoPlan ? 'free' : isSubscribed ? 'manage' : 'upgrade'}`}>
-                  {hasNoPlan ? (
+                  onClick={() => {
+                    if (!isAuthenticated) {
+                      setIsLoginOpen(true);
+                    } else {
+                      handleSubscribe();
+                    }
+                  }}
+                  className={`homepage-button ${!isAuthenticated ? 'auth-required' :
+                    hasNoPlan ? 'free' :
+                      isSubscribed ? 'manage' : 'upgrade'
+                    }`}
+                  disabled={false}
+                >
+                  {!isAuthenticated ? (
+                    <>
+                      <i className="bi bi-person-add"></i>
+                      &nbsp; Sign In
+                    </>
+                  ) : hasNoPlan ? (
                     <>
                       <i className="bi bi-rocket-takeoff"></i>
                       &nbsp; View All Plans
@@ -277,7 +338,7 @@ const HomePage = () => {
               </div>
 
               {/* Quick Plan Info */}
-              {!hasNoPlan && isSubscribed && currentPlan && (
+              {isAuthenticated && !hasNoPlan && isSubscribed && currentPlan && (
                 <motion.div
                   className="current-plan-info"
                   initial={{ opacity: 0, y: 10 }}
@@ -293,21 +354,12 @@ const HomePage = () => {
                 </motion.div>
               )}
 
-              {/* Free Plan Activation Info */}
-              {hasNoPlan && (
-                <motion.div
-                  className="free-plan-activation-info"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.7 }}
-                >
 
-                </motion.div>
-              )}
             </div>
           </div>
         </div>
       </motion.div>
+
       <section className="university-section">
         <div className="university-container">
           <motion.div
@@ -329,7 +381,7 @@ const HomePage = () => {
                 whileInView={{ scale: 1 }}
                 transition={{ delay: 0.3, duration: 0.6 }}
               >
-                <i className="bi bi-award"></i>
+                <i className="bi bi-gitlab"></i>
               </motion.div>
 
               <motion.h2
@@ -350,7 +402,7 @@ const HomePage = () => {
                 <div className="university-logo">
                   <div className="logo-image-container">
                     <img
-                      src="src/assets/tmc_logo.png"
+                      src="src/assets/schools-logo/tmc_logo.png"
                       alt="Trinidad Municipal College Logo"
                       className="college-logo"
                     />
@@ -406,14 +458,27 @@ const HomePage = () => {
           </motion.div>
         </div>
       </section>
+      <Login
+        isOpen={isLoginOpen}
+        onClose={() => setIsLoginOpen(false)}
+        onLoginSuccess={(userData) => {
+          console.log('✅ Login successful in HomePage, user:', userData);
+
+       
+          auth.onLoginSuccess(userData);
+
+      
+          setIsLoginOpen(false);
+        }}
+      />
 
       <SubscriptionModal
         isOpen={isSubscriptionOpen}
         onClose={() => setIsSubscriptionOpen(false)}
+        user={user}
       />
 
       <Admin />
-
 
       <ContactForm
         isOpen={isContactOpen}
@@ -454,75 +519,74 @@ const HomePage = () => {
                 <div className="logo-track">
                   <div className="logo-item">
                     <div className="logo-wrapper">
-                      <img src="src/assets/tmc_logo.png" alt="Trinidad Municipal College" className="logo-loop-image" />
-                      <span>Trinidad Municipal College</span>
+                      <img src="src/assets/schools-logo/tmc_logo.png" alt="Trinidad Municipal College" className="logo-loop-image" />
+                      <span>TMC</span>
                     </div>
                   </div>
                   <div className="logo-item">
                     <div className="logo-wrapper">
-                      <i className="bi bi-building"></i>
-                      <span>Stanford</span>
+                      <img src="src/assets/schools-logo/bisu-logo2.png" alt="Bohol Island State University" className="logo-loop-image" />
+                      <span>BISU</span>
                     </div>
                   </div>
                   <div className="logo-item">
                     <div className="logo-wrapper">
-                      <i className="bi bi-building"></i>
-                      <span>MIT</span>
+                      <img src="src/assets/schools-logo/TCC.png" alt="Tagbilaran City College" className="logo-loop-image" />
+                      <span>TCC</span>
                     </div>
                   </div>
                   <div className="logo-item">
                     <div className="logo-wrapper">
-                      <i className="bi bi-building"></i>
-                      <span>UC Berkeley</span>
+                      <img src="src/assets/schools-logo/UCC.png" alt="Ubay City College" className="logo-loop-image" />
+                      <span>UCC</span>
                     </div>
                   </div>
                   <div className="logo-item">
                     <div className="logo-wrapper">
-                      <i className="bi bi-building"></i>
-                      <span>Carnegie Mellon</span>
+                      <img src="src/assets/schools-logo/BIT.png" alt="BIT International College" className="logo-loop-image" />
+                      <span>BIT</span>
                     </div>
                   </div>
                   <div className="logo-item">
                     <div className="logo-wrapper">
-                      <i className="bi bi-building"></i>
-                      <span>University of Toronto</span>
-                    </div>
-                  </div>
-
-                  <div className="logo-item">
-                    <div className="logo-wrapper">
-                      <img src="src/assets/tmc_logo.png" alt="Trinidad Municipal College" className="logo-loop-image" />
-                      <span>Trinidad Municipal College</span>
+                      <img src="src/assets/schools-logo/BNSC.jpg" alt="Bohol Northern Star College" className="logo-loop-image" />
+                      <span>BNSC</span>
                     </div>
                   </div>
                   <div className="logo-item">
                     <div className="logo-wrapper">
-                      <i className="bi bi-building"></i>
-                      <span>Stanford</span>
+                      <img src="src/assets/schools-logo/tmc_logo.png" alt="Trinidad Municipal College" className="logo-loop-image" />
+                      <span>TMC</span>
                     </div>
                   </div>
                   <div className="logo-item">
                     <div className="logo-wrapper">
-                      <i className="bi bi-building"></i>
-                      <span>MIT</span>
+                      <img src="src/assets/schools-logo/bisu-logo2.png" alt="Bohol Island State University" className="logo-loop-image" />
+                      <span>BISU</span>
                     </div>
                   </div>
                   <div className="logo-item">
                     <div className="logo-wrapper">
-                      <i className="bi bi-building"></i>
-                      <span>UC Berkeley</span>
+                      <img src="src/assets/schools-logo/TCC.png" alt="Tagbilaran City College" className="logo-loop-image" />
+                      <span>TCC</span>
                     </div>
                   </div>
                   <div className="logo-item">
                     <div className="logo-wrapper">
-                      <i className="bi bi-building"></i>
-                      <span>Carnegie Mellon</span>
+                      <img src="src/assets/schools-logo/UCC.png" alt="Ubay City College" className="logo-loop-image" />
+                      <span>UCC</span>
                     </div>
                   </div>
                   <div className="logo-item">
                     <div className="logo-wrapper">
-                      <i className="bi bi-building"></i>
-                      <span>University of Toronto</span>
+                      <img src="src/assets/schools-logo/BIT.png" alt="BIT International College" className="logo-loop-image" />
+                      <span>BIT</span>
+                    </div>
+                  </div>
+                  <div className="logo-item">
+                    <div className="logo-wrapper">
+                      <img src="src/assets/schools-logo/BNSC.jpg" alt="Bohol Northern Star College" className="logo-loop-image" />
+                      <span>BNSC</span>
                     </div>
                   </div>
                 </div>
@@ -548,6 +612,7 @@ const HomePage = () => {
             localStorage.removeItem('ideastone_generation_count_v3');
             localStorage.removeItem('ideastone_subscription_v2');
             localStorage.removeItem('ideastone_generation_count_v2');
+            localStorage.removeItem('ideastone_user_data_v3');
             window.location.reload();
           }}
           className={`reset-subs-btn ${isScrolled ? 'hidden' : ''}`}
@@ -558,7 +623,7 @@ const HomePage = () => {
           }}
           transition={{ duration: 0.3, ease: 'easeOut' }}
         >
-          Reset All Subs
+          Reset All Data
         </motion.button>
       )}
     </div>

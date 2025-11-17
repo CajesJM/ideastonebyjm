@@ -6,5 +6,15 @@ export default defineConfig({
   plugins: [react()],
   build: {
     outDir: 'docs'
+  },
+  // ADD THIS SERVER SECTION:
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false,
+      }
+    }
   }
 })

@@ -898,18 +898,18 @@ button[style*="background: red"]:hover {
 
 .university-card {
   background: linear-gradient(135deg,
-      rgba(17, 17, 35, 0.9) 0%,
-      rgba(22, 33, 62, 0.85) 50%,
-      rgba(15, 52, 96, 0.8) 100%);
-  backdrop-filter: blur(25px) saturate(180%);
-  border: 1.5px solid rgba(123, 97, 255, 0.25);
-  border-radius: 28px;
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      rgba(255, 255, 255, 0.02) 100%);
+  backdrop-filter: blur(20px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 24px;
   padding: 50px 35px;
   position: relative;
   overflow: hidden;
   box-shadow:
-    0 20px 50px rgba(0, 0, 0, 0.4),
-    0 0 0 1px rgba(123, 97, 255, 0.15),
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.05),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
@@ -920,20 +920,20 @@ button[style*="background: red"]:hover {
   right: 0;
   bottom: 0;
   pointer-events: none;
-  filter: blur(40px);
+  filter: blur(30px);
 }
 
 .uni-orb {
   position: absolute;
   border-radius: 50%;
-  opacity: 0.3;
+  opacity: 0.15;
   animation: float 8s ease-in-out infinite;
 }
 
 .uni-1 {
   width: 100px;
   height: 100px;
-  background: linear-gradient(135deg, #7b61ff, #4cc9f0);
+  background: linear-gradient(135deg, rgba(123, 97, 255, 0.3), rgba(76, 201, 240, 0.3));
   top: -40px;
   right: 10%;
   animation-delay: 0s;
@@ -942,7 +942,7 @@ button[style*="background: red"]:hover {
 .uni-2 {
   width: 60px;
   height: 60px;
-  background: linear-gradient(135deg, #f72585, #7b61ff);
+  background: linear-gradient(135deg, rgba(247, 37, 133, 0.3), rgba(123, 97, 255, 0.3));
   bottom: -20px;
   left: 10%;
   animation-delay: -4s;
@@ -958,23 +958,25 @@ button[style*="background: red"]:hover {
   width: 70px;
   height: 70px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #7b61ff, #4cc9f0);
+  background: linear-gradient(135deg, rgba(123, 97, 255, 0.2), rgba(76, 201, 240, 0.2));
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 25px;
   font-size: 1.8rem;
-  color: white;
+  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
   box-shadow:
-    0 12px 30px rgba(123, 97, 255, 0.4),
-    inset 0 2px 0 rgba(255, 255, 255, 0.3);
+    0 8px 25px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .university-title {
   font-size: 2.2rem;
   color: #fff;
   margin: 0 0 30px 0;
-  background: linear-gradient(135deg, #fff 0%, #7b61ff 50%, #4cc9f0 100%);
+  background: linear-gradient(135deg, #fff 0%, rgba(123, 97, 255, 0.8) 50%, rgba(76, 201, 240, 0.8) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -991,10 +993,10 @@ button[style*="background: red"]:hover {
   align-items: center;
   gap: 18px;
   padding: 25px 40px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 18px;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(15px);
 }
 
 .logo-image-container {
@@ -1003,10 +1005,10 @@ button[style*="background: red"]:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 50%;
   padding: 12px;
-  border: 2px solid rgba(123, 97, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .college-logo {
@@ -1025,19 +1027,19 @@ button[style*="background: red"]:hover {
   font-size: 1.6rem;
   font-weight: 700;
   color: #fff;
-  background: linear-gradient(135deg, #fff 0%, #7b61ff 50%, #4cc9f0 100%);
+  background: linear-gradient(135deg, #fff 0%, rgba(123, 97, 255, 0.8) 50%, rgba(76, 201, 240, 0.8) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .logo-image-container:hover .college-logo {
-  transform: scale(1.1);
+  transform: scale(1.05);
 }
 
 .university-description {
   font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.8);
   line-height: 1.6;
   margin-bottom: 30px;
   max-width: 550px;
@@ -1046,9 +1048,8 @@ button[style*="background: red"]:hover {
 }
 
 .university-description strong {
-  color: #7b61ff;
-  font-weight: 700;
-  text-shadow: 0 0 10px rgba(123, 97, 255, 0.3);
+  color: rgba(123, 97, 255, 0.9);
+  font-weight: 600;
 }
 
 .partnership-features {
@@ -1063,38 +1064,42 @@ button[style*="background: red"]:hover {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.8);
   font-weight: 500;
   font-size: 0.95rem;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .partnership-feature i {
-  color: #4cc9f0;
+  color: rgba(76, 201, 240, 0.8);
   font-size: 1.1rem;
 }
 
 .college-mission {
   margin-top: 25px;
   padding: 18px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.03);
   border-radius: 12px;
-  border-left: 3px solid #7b61ff;
+  border-left: 2px solid rgba(123, 97, 255, 0.3);
+  backdrop-filter: blur(10px);
 }
 
 .college-mission p {
   font-style: italic;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.7);
   margin: 0;
   font-size: 1rem;
   line-height: 1.5;
 }
 
 .college-mission i {
-  color: #7b61ff;
+  color: rgba(123, 97, 255, 0.6);
   margin-right: 6px;
   font-size: 0.9rem;
 }
-
 @media (max-width: 768px) {
   .university-section {
     padding: 60px 15px;
@@ -1466,4 +1471,13 @@ button[style*="background: red"]:hover {
   transform: translateX(-50%) translateY(-100px) !important;
   opacity: 0 !important;
   pointer-events: none;
+}
+
+.user-welcome-message {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #ffffff; 
+  text-align: center;
+ margin-top: 0;
+  font-family: inherit;
 }

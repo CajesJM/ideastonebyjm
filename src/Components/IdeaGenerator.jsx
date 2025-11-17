@@ -111,53 +111,71 @@ function IdeaGenerator() {
     showSimpleToast('Recent ideas cleared');
   };
 
-  const generateIdea = () => {
-    if (!canGenerate()) {
-      showSimpleToast(`Generation limit reached! ${hasNoPlan ? 'Activate free plan to get started.' : isSubscribed ? 'Monthly limit exceeded.' : 'Subscribe for more ideas.'}`);
-      return;
+  const generateIdea = async () => {
+  console.log('🎯 generateIdea function CALLED');
+  
+  if (!canGenerate()) {
+    console.log('❌ Cannot generate - limit reached');
+    showSimpleToast(`Generation limit reached! ${hasNoPlan ? 'Activate free plan to get started.' : isSubscribed ? 'Monthly limit exceeded.' : 'Subscribe for more ideas.'}`);
+    return;
+  }
+  
+  console.log('✅ Can generate, proceeding...');
+
+  const filteredIdeas = ideas.filter(idea =>
+    (!filters.industry || idea.industry === filters.industry) &&
+    (!filters.type || idea.type === filters.type) &&
+    (!filters.difficulty || idea.difficulty === filters.difficulty) &&
+    (!filters.duration || idea.duration === filters.duration) &&
+    (!filters.search || idea.title.toLowerCase().includes(filters.search.toLowerCase()))
+  );
+
+  console.log('📊 Filtered ideas count:', filteredIdeas.length);
+  console.log('🔄 isLoading:', isLoading);
+
+  if (isLoading || filteredIdeas.length === 0) {
+    console.log('❌ Cannot generate - loading or no filtered ideas');
+    return;
+  }
+
+  setIsLoading(true);
+  setSelectedIdea(null);
+  setEnhancements(null);
+  setHasEnhancedCurrentIdea(false);
+
+  try {
+    console.log('⏳ Waiting for timeout...');
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    const index = Math.floor(Math.random() * filteredIdeas.length);
+    const newIdea = filteredIdeas[index];
+    console.log('🎲 Selected idea:', newIdea.title);
+
+    const updatedHistory = [newIdea, ...history.slice(0, 7)];
+    setHistory(updatedHistory);
+    localStorage.setItem('ideastone_recent_ideas', JSON.stringify(updatedHistory));
+
+    setSelectedIdea(newIdea);
+
+    console.log('📞 CALLING incrementGeneration NOW...');
+    const newCount = await incrementGeneration();
+    console.log('✅ incrementGeneration COMPLETED. New count:', newCount);
+
+    const remaining = getRemainingGenerations();
+    console.log('📊 Remaining generations:', remaining);
+    
+    if (remaining !== 'Unlimited') {
+      showSimpleToast(`Idea generated! ${remaining} ${remaining === 1 ? 'generation' : 'generations'} remaining`);
+    } else {
+      showSimpleToast('Idea generated! Unlimited generations remaining');
     }
-
-    const filteredIdeas = ideas.filter(idea =>
-      (!filters.industry || idea.industry === filters.industry) &&
-      (!filters.type || idea.type === filters.type) &&
-      (!filters.difficulty || idea.difficulty === filters.difficulty) &&
-      (!filters.duration || idea.duration === filters.duration) &&
-      (!filters.search || idea.title.toLowerCase().includes(filters.search.toLowerCase()))
-    );
-
-    if (isLoading || filteredIdeas.length === 0) return;
-
-    setIsLoading(true);
-    setSelectedIdea(null);
-    setEnhancements(null);
-    setHasEnhancedCurrentIdea(false);
-
-    setTimeout(() => {
-      try {
-        const index = Math.floor(Math.random() * filteredIdeas.length);
-        const newIdea = filteredIdeas[index];
-
-        const updatedHistory = [newIdea, ...history.slice(0, 7)];
-        setHistory(updatedHistory);
-        localStorage.setItem('ideastone_recent_ideas', JSON.stringify(updatedHistory));
-
-        setSelectedIdea(newIdea);
-
-        incrementGeneration();
-
-        const remaining = getRemainingGenerations();
-        if (remaining !== 'Unlimited') {
-          showSimpleToast(`Idea generated! ${remaining} ${remaining === 1 ? 'generation' : 'generations'} remaining`);
-        } else {
-          showSimpleToast('Idea generated! Unlimited generations remaining');
-        }
-      } catch (err) {
-        console.error('Error generating idea:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    }, 1500);
-  };
+  } catch (error) {
+    console.error('❌ Error generating idea:', error);
+  } finally {
+    console.log('🏁 Setting isLoading to false');
+    setIsLoading(false);
+  }
+};
 
   const handleBackToHomepage = () => {
     navigate('/');

@@ -133,7 +133,7 @@ const AboutPage = () => {
               className="problem-card"
             >
               <div className="problem-header">
-                <i className="bi bi-exclamation-triangle-fill"></i>
+          
                 <h3>The Challenge</h3>
               </div>
               <p>
@@ -157,7 +157,7 @@ const AboutPage = () => {
               className="solution-card"
             >
               <div className="solution-header">
-                <i className="bi bi-lightning"></i>
+             
                 <h3>Our Solution</h3>
               </div>
               <p>

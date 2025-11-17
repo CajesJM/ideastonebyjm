@@ -1,6 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from 'framer-motion';
-import profilePicture from "C:/xampp/htdocs/ideastone/src/assets/IMG_20240106_195144_425.jpg";
+import jm from '../assets/IMG_20240106_195144_425.jpg';
+import eugene from '../assets/Profile/Eugene.jpg';
+import kenneth from '../assets/Profile/Kenneth.jpg';
+import donesa from '../assets/Profile/Donesa.jpg';
+import banjong from '../assets/Profile/Banjong.jpg';
+import fernando from '../assets/Profile/fernando.gif';
+
 import "../../src/Style/Admin.css";
 
 function Admin() {
@@ -13,42 +19,42 @@ function Admin() {
       name: "Eugen Paul Cosme",
       role: "UI/UX Designer",
       age: 22,
-      img: profilePicture,
+      img: eugene,
     },
     {
       id: 2,
       name: "Fernando Bernales Jr.",
       role: "Backend Developer",
       age: 20,
-      img: profilePicture,
+      img: fernando,
     },
     {
       id: 3,
       name: "Kenneth Baculpo",
       role: "Frontend Developer",
       age: 20,
-      img: profilePicture,
+      img: kenneth,
     },
     {
       id: 4,
       name: "Jelson Intina",
       role: "DevOps Engineer",
       age: 20,
-      img: profilePicture,
+      img: banjong,
     },
     {
       id: 5,
       name: "Donesa Mendez",
       role: "QA Tester",
       age: 22,
-      img: profilePicture,
+      img: donesa,
     },
     {
       id: 6,
       name: "John Mark Cajes",
       role: "Full Stack Developer",
       age: 20,
-      img: profilePicture,
+      img: jm,
     },
   ];
 

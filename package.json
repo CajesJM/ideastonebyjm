@@ -4,7 +4,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "scripts": {
+   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
@@ -14,7 +14,10 @@
     "serve:laravel": "php ../ideastone-backendxlaravel/artisan serve",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d docs",
-    "start": "concurrently \"npm run serve:laravel\" \"npm run dev\""
+    "start": "concurrently \"npm run serve:laravel\" \"npm run dev\"",
+    "dev:full": "concurrently \"npm run dev\" \"npm run serve:watch\"",
+    "server": "npm run serve:watch",
+    "api": "npm run serve:watch"
   },
   "dependencies": {
     "bootstrap-icons": "^1.13.1",

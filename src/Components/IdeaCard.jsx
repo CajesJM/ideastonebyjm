@@ -231,42 +231,60 @@ function IdeaCard({ idea, index }) {
                     <span className="detail-value">{idea.type || 'Not specified'}</span>
                   </div>
                 </div>
-                {/* Team Roles Section */}
-                <div className="detail-item">
-                  <div className="detail-icon">
-                    <i className="bi bi-people"></i>
-                  </div>
-                  <div className="detail-content">
-                    <span className="detail-label">Team Roles</span>
-                    <span className="detail-value roles-spacing">
-                      {(() => {
-                        let rolesArray = [];
-
-                        if (Array.isArray(idea.roles)) {
-                          rolesArray = idea.roles;
-                        } else if (typeof idea.roles === 'string') {
-                          try {
-                            rolesArray = JSON.parse(idea.roles);
-                          } catch (e) {
-
-                            rolesArray = idea.roles.split(' ').map(role => role.trim());
-                          }
-                        }
-                        rolesArray = Array.isArray(rolesArray)
-                          ? rolesArray.filter(role => role && role.trim() !== '')
-                          : [];
-
-                        return rolesArray.length > 0
-                          ? rolesArray.join(' ')
-                          : 'No roles specified';
-                      })()}
-                    </span>
-                  </div>
-                </div>
+                
               </div>
             </div>
           )}
         </div>
+        {/* Team Roles Section */}
+                <div className="idea-section">
+                  <div
+                    className="section-header"
+                    onClick={() => toggleSection('roles')}
+                  >
+                    <div className="section-title">
+                      <div className="section-icon">
+                        <i className="bi bi-people"></i>
+                      </div>
+                      <span>Team Roles</span>
+                    </div>
+                    <div className="section-controls">
+                      <i className={`bi bi-chevron-${expandedSections.roles ? 'up' : 'down'}`}></i>
+                    </div>
+                  </div>
+                  {expandedSections.roles && (
+                    <div className="section-content">
+                      <div className="tech-tags">
+                        {(() => {
+                          let rolesArray = [];
+
+                          if (Array.isArray(idea.roles)) {
+                            rolesArray = idea.roles;
+                          } else if (typeof idea.roles === 'string') {
+                            try {
+                              rolesArray = JSON.parse(idea.roles);
+                            } catch (e) {
+                              rolesArray = idea.roles.split(' ').map(role => role.trim());
+                            }
+                          }
+                          rolesArray = Array.isArray(rolesArray)
+                            ? rolesArray.filter(role => role && role.trim() !== '')
+                            : [];
+
+                          return rolesArray.length > 0 ? (
+                            rolesArray.map((role, index) => (
+                              <span key={index} className="tech-tag">
+                                {role}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="no-tech">No roles specified</span>
+                          );
+                        })()}
+                      </div>
+                    </div>
+                  )}
+                </div>
 
         {/* Technologies Section */}
         <div className="idea-section">
